@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小智店主工具箱</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:#f0f2f5; color:#333; min-height:100vh; overflow-x:hidden;
+}
+
+/* ===== 头部 ===== */
+.header {
+  background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  padding:14px 18px; color:white; position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 12px rgba(102,126,234,0.3);
+}
+.header-top { display:flex; align-items:center; gap:10px; }
+.header h1 { font-size:19px; font-weight:700; }
+.header .sub { font-size:12px; opacity:0.85; }
+
+/* ===== 试用条 ===== */
+.trial-bar {
+  background:linear-gradient(135deg,#f39c12,#e67e22);
+  color:white; padding:8px 16px; font-size:13px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:60px; z-index:99;
+}
+.trial-bar .days { font-weight:700; font-size:15px; }
+.trial-bar .btn-upgrade {
+  background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.4);
+  color:white; padding:4px 14px; border-radius:8px; font-size:12px;
+  cursor:pointer; transition:all 0.2s; font-weight:600;
+}
+.trial-bar .btn-upgrade:hover { background:rgba(255,255,255,0.3); }
+.trial-bar.expired { background:#e74c3c; }
+
+/* ===== Tab ===== */
+.tab-bar {
+  display:flex; gap:3px; margin-top:10px;
+  background:rgba(255,255,255,0.12); border-radius:10px; padding:3px;
+}
+.tab-btn {
+  flex:1; padding:7px 10px; border:none; background:transparent;
+  color:rgba(255,255,255,0.7); font-size:12px; font-weight:600;
+  border-radius:8px; cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.tab-btn.active { background:rgba(255,255,255,0.95); color:#667eea; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.tab-btn.locked { position:relative; }
+.tab-btn.locked::after { content:'🔒'; font-size:10px; margin-left:2px; }
+
+.tab-content { display:none; padding:14px; max-width:1200px; margin:0 auto; }
+.tab-content.active { display:block; }
+
+/* ===== 各种按钮 ===== */
+.btn {
+  padding:8px 16px; border:none; border-radius:9px;
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:all 0.2s; display:inline-flex; align-items:center; gap:5px;
+}
+.btn:active { transform:scale(0.96); }
+.btn-primary { background:#667eea; color:white; }
+.btn-primary:hover { background:#5a6fd6; }
+.btn-success { background:#2ecc71; color:white; }
+.btn-success:hover { background:#27ae60; }
+.btn-outline { background:white; color:#667eea; border:2px solid #667eea; }
+.btn-outline:hover { background:#f0f2ff; }
+.btn-warning { background:#f39c12; color:white; }
+.btn-warning:hover { background:#e67e22; }
+.btn-danger { background:#e74c3c; color:white; }
+.btn-danger:hover { background:#c0392b; }
+.btn-sm { padding:5px 10px; font-size:11px; }
+.btn-gold { background:linear-gradient(135deg,#f39c12,#e67e22); color:white; }
+.btn-gold:hover { background:linear-gradient(135deg,#e67e22,#d35400); }
+.btn-block { width:100%; justify-content:center; }
+
+/* ===== 海报相关 ===== */
+.poster-intro { text-align:center; padding:8px 0 14px; font-size:13px; color:#666; }
+
+.template-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:12px; padding-bottom:18px;
+}
+.template-card {
+  background:white; border-radius:12px; overflow:hidden;
+  cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  transition:all 0.25s; border:3px solid transparent; position:relative;
+}
+.template-card:hover { transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,0.1); }
+.template-card.premium::after {
+  content:'🔒'; position:absolute; top:10px; right:10px;
+  background:rgba(0,0,0,0.4); color:white; width:28px; height:28px;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:14px;
+}
+.template-card .preview {
+  width:100%; height:270px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:12px; position:relative; overflow:hidden;
+}
+.template-card .preview .mini-title { font-size:20px; font-weight:900; margin-bottom:5px; text-align:center; }
+.template-card .preview .mini-sub { font-size:12px; opacity:0.8; text-align:center; }
+.template-card .info { padding:10px 12px; border-top:1px solid #f0f0f0; }
+.template-card .info .name { font-weight:700; font-size:14px; }
+.template-card .info .desc { font-size:11px; color:#999; margin-top:2px; }
+.template-card .premium-tag {
+  background:#f39c12; color:white; font-size:10px; padding:1px 8px;
+  border-radius:4px; display:inline-block; margin-left:4px;
+}
+
+.editor-layout { display:flex; flex-direction:column; gap:12px; max-width:880px; margin:0 auto; }
+@media(min-width:768px){ .editor-layout{flex-direction:row;align-items:flex-start;} }
+
+.canvas-area {
+  flex:1; background:white; border-radius:12px; padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  display:flex; flex-direction:column; align-items:center;
+}
+.canvas-area .canvas-label { font-size:11px; color:#999; margin-bottom:8px; }
+.canvas-wrapper { position:relative; width:100%; max-width:360px; margin:0 auto; }
+#posterCanvas { width:100%; height:auto; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:block; }
+
+.editor-actions { display:flex; gap:6px; margin-top:10px; width:100%; flex-wrap:wrap; justify-content:center; }
+
+.control-panel {
+  background:white; border-radius:12px; padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  min-width:0; flex-shrink:0;
+}
+@media(min-width:768px){ .control-panel{width:260px;} }
+.control-panel h3 { font-size:13px; color:#666; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #f0f0f0; }
+.control-group { margin-bottom:10px; }
+.control-group label { display:block; font-size:11px; font-weight:600; color:#555; margin-bottom:3px; }
+.control-group input[type="text"],.control-group input[type="color"],.control-group select {
+  width:100%; padding:6px 8px; border:1.5px solid #e0e0e0;
+  border-radius:7px; font-size:12px; outline:none; transition:border-color 0.2s;
+}
+.control-group input:focus,.control-group select:focus{ border-color:#667eea; }
+.control-group input[type="range"]{ width:100%; margin-top:3px; }
+.control-group .range-value{ font-size:10px; color:#999; float:right; }
+
+.edit-section{ margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #f5f5f5; }
+.edit-section:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+.edit-section .section-title{ font-size:11px; font-weight:600; color:#667eea; margin-bottom:6px; }
+
+.text-list{ display:flex; flex-direction:column; gap:5px; }
+.text-item {
+  display:flex; align-items:center; gap:5px; padding:5px 7px;
+  background:#f8f9ff; border-radius:6px; cursor:pointer;
+  border:2px solid transparent; transition:all 0.2s;
+}
+.text-item:hover{ background:#f0f2ff; }
+.text-item.active{ border-color:#667eea; background:#eef0ff; }
+.text-item .ti-label{ font-size:10px; color:#888; min-width:38px; flex-shrink:0; }
+.text-item .ti-content{ flex:1; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.upload-area {
+  border:2px dashed #ddd; border-radius:7px; padding:8px;
+  text-align:center; cursor:pointer; transition:all 0.2s; font-size:11px; color:#999;
+}
+.upload-area:hover{ border-color:#667eea; color:#667eea; }
+.upload-area.has-image{ border-color:#2ecc71; border-style:solid; }
+.upload-area img{ max-width:45px; max-height:45px; border-radius:4px; display:block; margin:0 auto 2px; }
+.upload-area .remove-img{ display:inline-block; margin-top:2px; font-size:10px; color:#e74c3c; cursor:pointer; }
+
+/* ===== Logo 生成器 ===== */
+.logo-gen-box {
+  margin-top:8px; padding-top:8px; border-top:1px dashed #e0e0e0;
+}
+.logo-gen-box .lg-label { font-size:11px; font-weight:600; color:#555; margin-bottom:4px; }
+.logo-gen-row { display:flex; gap:6px; margin-bottom:6px; }
+.logo-gen-row input {
+  flex:1; padding:6px 8px; border:1.5px solid #e0e0e0;
+  border-radius:7px; font-size:12px; outline:none;
+}
+.logo-gen-row input:focus { border-color:#667eea; }
+.logo-style-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin-bottom:6px;
+}
+.logo-style-item {
+  height:36px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; cursor:pointer;
+  border:2px solid transparent; transition:all 0.2s;
+}
+.logo-style-item:hover { transform:scale(1.05); }
+.logo-style-item.active { border-color:#667eea; box-shadow:0 0 0 2px rgba(102,126,234,0.3); }
+.logo-preview-box {
+  margin-top:4px; display:flex; align-items:center; gap:10px; padding:6px 10px;
+  background:#f8f9ff; border-radius:8px;
+}
+.logo-preview-box canvas { width:40px; height:40px; border-radius:50%; flex-shrink:0; }
+
+/* Logo 布局选择 */
+.logo-layout-grid {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin-bottom:8px;
+}
+.logo-layout-item {
+  padding:6px 2px; border-radius:8px; text-align:center; cursor:pointer;
+  border:2px solid transparent; transition:all 0.2s; background:#f8f9ff;
+}
+.logo-layout-item:hover { background:#eef0ff; }
+.logo-layout-item.active { border-color:#667eea; background:#eef0ff; }
+.logo-layout-item .lli-icon { font-size:18px; }
+.logo-layout-item .lli-name { font-size:9px; color:#888; margin-top:2px; }
+.logo-color-grid {
+  display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin-bottom:6px;
+}
+.logo-color-item {
+  height:28px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; transition:all 0.2s;
+}
+.logo-color-item:hover { transform:scale(1.15); }
+.logo-color-item.active { border-color:#333; box-shadow:0 0 0 2px white, 0 0 0 4px #667eea; }
+
+/* ===== 智能生成海报 ===== */
+.smart-mode-bar {
+  display:flex; gap:6px; justify-content:center; margin-bottom:12px;
+}
+.smart-mode-btn {
+  padding:8px 20px; border:2px solid #667eea; border-radius:10px;
+  background:white; color:#667eea; font-size:13px; font-weight:600;
+  cursor:pointer; transition:all 0.2s;
+}
+.smart-mode-btn.active { background:#667eea; color:white; }
+.smart-form { display:none; max-width:600px; margin:0 auto; }
+.smart-form.show { display:block; }
+.smart-form-card {
+  background:white; border-radius:14px; padding:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.07); margin-bottom:14px;
+}
+.smart-form-card h3 {
+  font-size:15px; color:#333; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;
+}
+.smart-form-row { margin-bottom:10px; }
+.smart-form-row label { display:block; font-size:12px; font-weight:600; color:#555; margin-bottom:3px; }
+.smart-form-row input, .smart-form-row select {
+  width:100%; padding:8px 10px; border:1.5px solid #e0e0e0;
+  border-radius:8px; font-size:13px; outline:none; transition:border-color 0.2s;
+}
+.smart-form-row input:focus, .smart-form-row select:focus { border-color:#667eea; }
+.smart-color-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:5px; margin-top:4px; }
+.smart-color-item { height:28px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
+.smart-color-item:hover { transform:scale(1.15); }
+.smart-color-item.active { border-color:#333; box-shadow:0 0 0 2px white, 0 0 0 4px #667eea; }
+
+/* ===== 锁屏遮罩 ===== */
+.lock-overlay {
+  display:none; position:absolute; top:0; left:0; right:0; bottom:0;
+  background:rgba(255,255,255,0.85); backdrop-filter:blur(2px);
+  z-index:50; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:12px;
+}
+.lock-overlay.show{ display:flex; }
+.lock-overlay .lock-icon{ font-size:48px; margin-bottom:8px; }
+.lock-overlay .lock-text{ font-size:14px; color:#666; margin-bottom:12px; text-align:center; padding:0 24px; line-height:1.6; }
+
+.feature-locked {
+  position:relative; pointer-events:none; opacity:0.6;
+}
+.feature-locked .lock-overlay{ display:flex; pointer-events:auto; }
+
+/* ===== 文案助手 ===== */
+.copy-header{ text-align:center; padding:8px 0 14px; }
+.copy-header h2{ font-size:18px; color:#333; }
+.copy-header p{ font-size:12px; color:#888; margin-top:3px; }
+
+.copy-layout{ display:flex; flex-direction:column; gap:12px; max-width:880px; margin:0 auto; }
+@media(min-width:768px){ .copy-layout{flex-direction:row;} }
+
+.copy-sidebar{
+  background:white; border-radius:12px; padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07); flex-shrink:0;
+}
+@media(min-width:768px){ .copy-sidebar{width:200px;} }
+.copy-sidebar h3{ font-size:12px; color:#666; margin-bottom:8px; }
+
+.industry-list{ display:flex; flex-direction:column; gap:3px; }
+.industry-item{
+  padding:7px 8px; border-radius:7px; cursor:pointer;
+  font-size:12px; transition:all 0.2s;
+  background:#f8f9ff; border:2px solid transparent;
+}
+.industry-item:hover{ background:#eef0ff; }
+.industry-item.active{ background:#667eea; color:white; border-color:#667eea; }
+
+.copy-main{ flex:1; display:flex; flex-direction:column; gap:12px; }
+
+.occasion-bar{
+  background:white; border-radius:12px; padding:10px 12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  display:flex; gap:5px; flex-wrap:wrap;
+}
+.occasion-btn{
+  padding:5px 12px; border:1.5px solid #e0e0e0; border-radius:18px;
+  background:white; font-size:11px; cursor:pointer; transition:all 0.2s;
+}
+.occasion-btn:hover{ border-color:#667eea; color:#667eea; }
+.occasion-btn.active{ background:#667eea; color:white; border-color:#667eea; }
+
+.copy-form-box{
+  background:white; border-radius:12px; padding:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+}
+.copy-form-box h3{ font-size:14px; color:#333; margin-bottom:10px; }
+.copy-form-row{ margin-bottom:8px; }
+.copy-form-row label{ display:block; font-size:11px; font-weight:600; color:#555; margin-bottom:2px; }
+.copy-form-row input,.copy-form-row textarea,.copy-form-row select{
+  width:100%; padding:6px 8px; border:1.5px solid #e0e0e0;
+  border-radius:7px; font-size:12px; outline:none;
+}
+.copy-form-row input:focus,.copy-form-row textarea:focus{ border-color:#667eea; }
+.copy-form-row textarea{ resize:vertical; min-height:40px; }
+
+.copy-result-area{
+  background:white; border-radius:12px; padding:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07); display:none;
+}
+.copy-result-area.show{ display:block; }
+.copy-result-area h3{ font-size:14px; color:#333; margin-bottom:8px; }
+.copy-result-box{
+  background:#f8f9ff; border-radius:8px; padding:12px;
+  margin-bottom:8px; font-size:13px; line-height:1.8;
+  white-space:pre-wrap; min-height:50px;
+}
+.copy-result-box .copy-label{
+  display:inline-block; background:#667eea; color:white;
+  padding:1px 6px; border-radius:3px; font-size:9px; margin-bottom:4px;
+}
+.copy-result-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+
+/* ===== 营销灵感 ===== */
+.tips-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; padding-top:8px; }
+.tip-card{
+  background:white; border-radius:12px; padding:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.07);
+  cursor:pointer; transition:all 0.25s; border-left:4px solid #667eea;
+}
+.tip-card:hover{ transform:translateY(-2px); box-shadow:0 5px 16px rgba(0,0,0,0.1); }
+.tip-card .tip-icon{ font-size:26px; margin-bottom:4px; }
+.tip-card .tip-title{ font-weight:700; font-size:14px; margin-bottom:3px; }
+.tip-card .tip-desc{ font-size:12px; color:#777; line-height:1.6; }
+
+.tip-detail-overlay{
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.5); z-index:200;
+  justify-content:center; align-items:center; padding:16px;
+}
+.tip-detail-overlay.show{ display:flex; }
+.tip-detail-box{
+  background:white; border-radius:14px; padding:20px;
+  max-width:480px; width:100%; max-height:80vh; overflow-y:auto;
+}
+.tip-detail-box .td-close{ float:right; background:none; border:none; font-size:20px; cursor:pointer; color:#999; }
+.tip-detail-box .td-icon{ font-size:32px; margin-bottom:6px; }
+.tip-detail-box .td-title{ font-size:18px; font-weight:700; margin-bottom:8px; }
+.tip-detail-box .td-content{ font-size:13px; line-height:1.8; color:#444; }
+.tip-detail-box .td-content li{ margin-bottom:5px; margin-left:16px; }
+
+/* ===== 支付弹窗 ===== */
+.pay-overlay{
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.6); z-index:300;
+  justify-content:center; align-items:center; padding:20px;
+}
+.pay-overlay.show{ display:flex; }
+.pay-box{
+  background:white; border-radius:18px; padding:28px 24px;
+  max-width:400px; width:100%; text-align:center;
+  animation:popIn 0.3s ease;
+}
+@keyframes popIn {
+  0%{transform:scale(0.85);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+.pay-box .pay-icon{ font-size:48px; margin-bottom:8px; }
+.pay-box h2{ font-size:20px; color:#333; margin-bottom:4px; }
+.pay-box .pay-price{ font-size:36px; font-weight:900; color:#f39c12; margin:6px 0; }
+.pay-box .pay-price small{ font-size:18px; font-weight:400; }
+.pay-box .pay-desc{ font-size:13px; color:#888; margin-bottom:16px; line-height:1.6; }
+.pay-box .pay-features{
+  text-align:left; background:#f8f9ff; border-radius:10px;
+  padding:12px 16px; margin-bottom:16px;
+}
+.pay-box .pay-features li{
+  list-style:none; padding:4px 0; font-size:13px; color:#555;
+}
+.pay-box .pay-features li::before{ content:'✅ '; }
+.pay-box .pay-qr-area{
+  width:220px; height:220px; margin:0 auto 14px;
+  border:2px dashed #ddd; border-radius:12px;
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; cursor:pointer; overflow:hidden;
+  position:relative;
+}
+.pay-box .pay-qr-area img{ max-width:100%; max-height:100%; }
+.pay-box .pay-qr-area .placeholder{ color:#bbb; font-size:13px; }
+.pay-box .pay-qr-area .placeholder .big{ font-size:48px; display:block; margin-bottom:6px; }
+.pay-box .pay-actions{ display:flex; gap:8px; }
+.pay-box .pay-actions .btn{ flex:1; }
+.pay-verify-box{ margin-top:12px; }
+.pay-verify-box input{
+  width:100%; padding:8px 10px; border:1.5px solid #e0e0e0;
+  border-radius:8px; font-size:14px; text-align:center; outline:none;
+}
+.pay-verify-box input:focus{ border-color:#2ecc71; }
+
+/* ===== Toast ===== */
+.toast {
+  position:fixed; bottom:20px; left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:rgba(0,0,0,0.85); color:white;
+  padding:8px 18px; border-radius:9px;
+  font-size:12px; z-index:999; opacity:0;
+  transition:all 0.35s; pointer-events:none; white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>小智店主工具箱</h1>
+      <div class="sub">海报 · 文案 · 营销</div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('poster')">🎨 做海报</button>
+    <button class="tab-btn" id="tabBtnCopy" onclick="switchTab('copy')">✍️ 写文案</button>
+    <button class="tab-btn" id="tabBtnTips" onclick="switchTab('tips')">💡 营销灵感</button>
+    <button class="tab-btn" id="tabBtnPromo" onclick="switchTab('promo')">📢 推广页</button>
+  </div>
+</div>
+
+<!-- ===== 试用条 ===== -->
+<div class="trial-bar" id="trialBar">
+  <span id="trialBarText">🔑 试用期还剩 <span class="days" id="trialDays">7</span> 天</span>
+  <button class="btn-upgrade" onclick="showPayModal()">💎 立即升级 9.9元</button>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================ -->
+<!--  TAB 1: 海报制作 -->
+<!-- ============================================================ -->
+<div class="tab-content active" id="tabPoster">
+  <!-- 模式切换 -->
+  <div class="smart-mode-bar">
+    <button class="smart-mode-btn" id="modePick" onclick="switchPosterMode('pick')">🎨 选模板</button>
+    <button class="smart-mode-btn active" id="modeSmart" onclick="switchPosterMode('smart')">🤖 智能生成</button>
+  </div>
+
+  <!-- 智能生成表单 -->
+  <div class="smart-form show" id="smartForm">
+    <!-- Logo 快速生成 -->
+    <div class="smart-form-card" style="margin-bottom:10px;">
+      <h3>🎨 生成店铺 Logo</h3>
+      <div class="smart-form-row">
+        <label>店名</label>
+        <input type="text" id="qs_logo_name" placeholder="输入店名" value="我的小店">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="quickMakeLogo()">✨ 生成 Logo 并用到海报</button>
+    </div>
+    <div class="smart-form-card">
+      <h3>📝 填写信息，一键生成海报</h3>
+      <div class="smart-form-row">
+        <label>🏪 店铺名称</label>
+        <input type="text" id="sf_name" placeholder="如：老王餐厅" value="我的小店">
+      </div>
+      <div class="smart-form-row">
+        <label>📢 活动主题</label>
+        <input type="text" id="sf_title" placeholder="如：开业大酬宾 / 限时特惠" value="限时特惠">
+      </div>
+      <div class="smart-form-row">
+        <label>💰 优惠内容</label>
+        <input type="text" id="sf_discount" placeholder="如：全场8折 / 买一送一" value="全场 8 折">
+      </div>
+      <div class="smart-form-row">
+        <label>🎁 附加信息（选填）</label>
+        <input type="text" id="sf_bonus" placeholder="如：进店即送小礼品 / 满100减20" value="进店即送小礼品">
+      </div>
+      <div class="smart-form-row">
+        <label>📅 活动时间</label>
+        <input type="text" id="sf_date" placeholder="如：6月1日-6月15日" value="即日起至月底">
+      </div>
+      <div class="smart-form-row">
+        <label>📍 地址</label>
+        <input type="text" id="sf_address" placeholder="店铺地址" value="XX路XX号">
+      </div>
+      <div class="smart-form-row">
+        <label>📞 电话（选填）</label>
+        <input type="text" id="sf_phone" placeholder="联系电话" value="138xxxxxxx">
+      </div>
+      <div class="smart-form-row">
+        <label>🎨 行业风格</label>
+        <select id="sf_industry">
+          <option value="food">🍜 餐饮美食</option>
+          <option value="clothing">👗 服装鞋帽</option>
+          <option value="fruit">🍎 水果生鲜</option>
+          <option value="flower">💐 鲜花绿植</option>
+          <option value="beauty">💇 美容美发</option>
+          <option value="market">🏪 超市便利店</option>
+          <option value="general" selected>⭐ 综合通用</option>
+        </select>
+      </div>
+      <div class="smart-form-row">
+        <label>🎨 色调</label>
+        <div class="smart-color-grid" id="smartColorGrid"></div>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:6px;padding:12px;font-size:15px;" onclick="smartGenerate()">✨ 一键生成海报</button>
+    </div>
+  </div>
+
+  <!-- 智能生成结果 -->
+  <div class="smart-preview-area" id="smartPreview">
+    <div class="editor-layout">
+      <div class="canvas-area">
+        <div class="canvas-label">🤖 智能生成的海报</div>
+        <div class="canvas-wrapper">
+          <canvas id="smartCanvas" width="600" height="900"></canvas>
+        </div>
+        <div class="smart-result-actions">
+          <button class="btn btn-success" onclick="smartExport()">📥 导出图片</button>
+          <button class="btn btn-outline" onclick="smartEdit()">✏️ 进入编辑</button>
+          <button class="btn btn-warning" onclick="smartRegenerate()">🔄 重新生成</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选模板模式 -->
+  <div id="templateSelector" style="display:none;">
+    <div class="template-grid" id="templateGrid"></div>
+  </div>
+
+  <div id="editorArea" style="display:none;">
+    <div style="margin-bottom:6px;">
+      <button class="btn btn-outline btn-sm" onclick="backToTemplates()">← 返回选模板</button>
+    </div>
+    <div class="editor-layout">
+      <div class="canvas-area">
+        <div class="canvas-label">🖼️ 海报预览</div>
+        <div class="canvas-wrapper">
+          <canvas id="posterCanvas" width="600" height="900"></canvas>
+        </div>
+        <div class="editor-actions">
+          <button class="btn btn-success" onclick="exportPNG()">📥 导出图片</button>
+          <button class="btn btn-outline" onclick="printPoster()">🖨️ 打印</button>
+          <button class="btn btn-primary" id="btnToCopy" onclick="switchTab('copy')">✍️ 生成文案</button>
+        </div>
+      </div>
+      <div class="control-panel" id="controlPanel">
+        <h3>🎨 编辑内容</h3>
+        <div class="edit-section">
+          <div class="section-title">背景</div>
+          <div class="control-group">
+            <label>背景颜色</label>
+            <input type="color" id="bgColor" value="#ffffff" oninput="updateCanvas()">
+          </div>
+          <div class="control-group">
+            <label>背景图片</label>
+            <div class="upload-area" id="bgUploadArea" onclick="document.getElementById('bgInput').click()">
+              <div id="bgPreview">+ 点击上传</div>
+              <input type="file" id="bgInput" accept="image/*" hidden onchange="handleBgUpload(event)">
+            </div>
+          </div>
+        </div>
+        <div class="edit-section">
+          <div class="section-title">✏️ 文字</div>
+          <div class="text-list" id="textList"></div>
+        </div>
+        <div class="edit-section" id="textDetail" style="display:none;">
+          <div class="section-title">文字样式</div>
+          <div class="control-group">
+            <label>内容</label>
+            <input type="text" id="editTextContent" oninput="updateTextContent(this.value)">
+          </div>
+          <div class="control-group">
+            <label>字号 <span class="range-value" id="fontSizeVal">36px</span></label>
+            <input type="range" id="editFontSize" min="14" max="80" value="36" oninput="updateTextStyle()">
+          </div>
+          <div class="control-group">
+            <label>颜色</label>
+            <input type="color" id="editTextColor" value="#333333" oninput="updateTextStyle()">
+          </div>
+          <div class="control-group">
+            <label>粗细</label>
+            <select id="editFontWeight" onchange="updateTextStyle()">
+              <option value="normal">正常</option>
+              <option value="bold" selected>加粗</option>
+              <option value="900">特粗</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>对齐</label>
+            <select id="editTextAlign" onchange="updateTextStyle()">
+              <option value="center" selected>居中</option>
+              <option value="left">左对齐</option>
+              <option value="right">右对齐</option>
+            </select>
+          </div>
+        </div>
+        <div class="edit-section">
+          <div class="section-title">🏪 店铺 Logo</div>
+          <div class="upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+            <div id="logoPreview">+ 点击上传图片</div>
+            <input type="file" id="logoInput" accept="image/*" hidden onchange="handleLogoUpload(event)">
+          </div>
+          <!-- Logo 生成器 -->
+          <div class="logo-gen-box">
+            <div class="lg-label">✏️ 输入店名生成个性化 Logo</div>
+            <div class="logo-gen-row">
+              <input type="text" id="logoNameInput" placeholder="输入店名" value="我的小店" oninput="previewGeneratedLogo()">
+              <button class="btn btn-sm btn-primary" onclick="generateLogo()">✨ 生成</button>
+            </div>
+            <div class="logo-gen-row">
+              <input type="text" id="logoSubInput" placeholder="副标题/行业（选填）" oninput="previewGeneratedLogo()" style="font-size:11px;color:#888;">
+            </div>
+            <div class="smart-form-row">
+              <label style="font-size:11px;">款式</label>
+              <select id="logoLayoutSelect" onchange="previewGeneratedLogo()" style="font-size:12px;">
+                <option value="badge">🏅 徽章式</option>
+                <option value="stamp">🖌️ 印章式</option>
+                <option value="classic">✨ 典藏式</option>
+                <option value="modern">💠 现代式</option>
+                <option value="minimal">◆ 简约式</option>
+              </select>
+            </div>
+            <div class="smart-form-row">
+              <label style="font-size:11px;">颜色</label>
+              <select id="logoColorSelect" onchange="previewGeneratedLogo()" style="font-size:12px;">
+                <option value="purple">🟣 典雅紫</option>
+                <option value="blue">🔵 商务蓝</option>
+                <option value="green">🟢 清新绿</option>
+                <option value="red">🔴 喜庆红</option>
+                <option value="gold">🟡 金色</option>
+                <option value="pink">💗 浪漫粉</option>
+                <option value="teal">💎 青碧</option>
+                <option value="dark">⚫ 经典黑</option>
+              </select>
+            </div>
+            <div class="logo-preview-box" id="logoPreviewBox" style="display:none;">
+              <canvas id="logoPreviewCanvas" width="120" height="120"></canvas>
+              <div>
+                <div style="font-size:12px;font-weight:600;" id="logoPreviewName"></div>
+                <div style="font-size:10px;color:#999;">点击「✨ 生成」使用</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  TAB 2: 文案助手 -->
+<!-- ============================================================ -->
+<div class="tab-content" id="tabCopy">
+  <div class="copy-header" id="copyHeaderArea">
+    <h2>✍️ 文案助手</h2>
+    <p>输入店名和产品名，自动生成多种文案</p>
+  </div>
+
+  <!-- 快速生成表单 -->
+  <div class="smart-form-card" style="max-width:600px;margin:0 auto 14px;">
+    <h3>📝 快速生成</h3>
+    <div class="smart-form-row">
+      <label>🏪 店铺名称</label>
+      <input type="text" id="qc_name" placeholder="如：老王餐厅" value="我的小店">
+    </div>
+    <div class="smart-form-row">
+      <label>📦 产品/服务名称</label>
+      <input type="text" id="qc_product" placeholder="如：红烧牛肉面 / 夏季连衣裙 / 红玫瑰" value="招牌产品">
+    </div>
+    <div class="smart-form-row">
+      <label>🎨 行业</label>
+      <select id="qc_industry">
+        <option value="food">🍜 餐饮美食</option>
+        <option value="clothing">👗 服装鞋帽</option>
+        <option value="fruit">🍎 水果生鲜</option>
+        <option value="flower">💐 鲜花绿植</option>
+        <option value="grocery">🏪 超市便利店</option>
+        <option value="beauty">💇 美容美发</option>
+        <option value="general" selected>⭐ 综合通用</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-block" style="padding:12px;font-size:15px;margin-top:4px;" onclick="quickCopyGenerate()">✨ 一键生成多种文案</button>
+  </div>
+
+  <!-- 结果区 -->
+  <div id="qcResults" style="max-width:600px;margin:0 auto;"></div>
+
+  <!-- 无结果提示 -->
+  <div id="qcEmpty" style="text-align:center;padding:40px 20px;color:#bbb;font-size:14px;max-width:600px;margin:0 auto;">
+    填好信息，点「一键生成」即可获得多种营销文案
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  TAB 3: 营销灵感 -->
+<!-- ============================================================ -->
+<div class="tab-content" id="tabTips">
+  <div class="copy-header">
+    <h2>💡 营销灵感</h2>
+    <p>实体店老板的实用营销技巧</p>
+  </div>
+  <div class="tips-grid" id="tipsGrid"></div>
+  <div class="tip-detail-overlay" id="tipDetailOverlay">
+    <div class="tip-detail-box">
+      <button class="td-close" onclick="closeTipDetail()">✕</button>
+      <div class="td-icon" id="tdIcon"></div>
+      <div class="td-title" id="tdTitle"></div>
+      <div class="td-content" id="tdContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TAB 4: 推广页 ===== -->
+<div class="tab-content" id="tabPromo">
+  <div class="copy-header">
+    <h2>📢 同城推广页</h2>
+    <p>一键生成精美推广页，发朋友圈吸引同城顾客</p>
+  </div>
+  <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
+    <div class="smart-form-card">
+      <h3>📝 填写店铺信息</h3>
+      <div class="smart-form-row">
+        <label>🏪 店铺名称</label>
+        <input type="text" id="pf_name" placeholder="如：老王餐厅" value="我的小店">
+      </div>
+      <div class="smart-form-row">
+        <label>📢 宣传口号</label>
+        <input type="text" id="pf_slogan" placeholder="如：用心做好每一道菜" value="品质保证 · 欢迎光临">
+      </div>
+      <div class="smart-form-row">
+        <label>🔥 主推优惠</label>
+        <input type="text" id="pf_promo" placeholder="如：全场8折 / 新客立减" value="全场 8 折">
+      </div>
+      <div class="smart-form-row">
+        <label>📦 主营产品</label>
+        <input type="text" id="pf_products" placeholder="如：红烧牛肉面、酸菜鱼" value="招牌产品">
+      </div>
+      <div class="smart-form-row">
+        <label>📍 地址</label>
+        <input type="text" id="pf_address" placeholder="店铺地址" value="XX路XX号">
+      </div>
+      <div class="smart-form-row">
+        <label>📞 电话</label>
+        <input type="text" id="pf_phone" placeholder="联系电话" value="138xxxxxxx">
+      </div>
+      <div class="smart-form-row">
+        <label>⏰ 营业时间</label>
+        <input type="text" id="pf_hours" placeholder="如：9:00-21:00" value="9:00-21:00">
+      </div>
+      <div class="smart-form-row">
+        <label>🎨 风格</label>
+        <select id="pf_theme">
+          <option value="red">🔥 热情红（餐饮推荐）</option>
+          <option value="green">🌿 清新绿（水果花店）</option>
+          <option value="blue">💎 商务蓝（服务行业）</option>
+          <option value="dark">⚫ 简约黑（百搭）</option>
+          <option value="gold">🌟 金色（高端）</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" style="padding:12px;font-size:15px;margin-top:4px;" onclick="renderPromoPage()">✨ 生成推广页</button>
+    </div>
+    <div id="promoPreview" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;color:#888;">📱 手机预览</span>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm btn-outline" onclick="copyPromoLink()">🔗 复制链接</button>
+          <button class="btn btn-sm btn-success" onclick="sharePromoPage()">📤 分享</button>
+        </div>
+      </div>
+      <div id="promoPhoneFrame" style="max-width:380px;margin:0 auto;border-radius:20px;overflow:hidden;box-shadow:0 4px 30px rgba(0,0,0,0.15);border:3px solid #333;"></div>
+      <div style="text-align:center;margin-top:8px;">
+        <div id="promoQR" style="margin:8px auto;width:120px;height:120px;background:#f8f9ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bbb;">加载二维码...</div>
+        <div style="font-size:12px;color:#bbb;">📱 把链接发到微信群、朋友圈，同城人点开就能看到</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  支付弹窗 -->
+<!-- ============================================================ -->
+<div class="pay-overlay" id="payOverlay">
+  <div class="pay-box">
+  <div class="pay-icon">💎</div>
+  <h2>升级专业版</h2>
+  <div class="pay-price"><small>¥</small>9.9</div>
+  <div class="pay-desc">一次性付费，永久使用全部高级功能</div>
+
+  <div class="pay-features">
+    <li>📢 同城推广页 · 吸引顾客</li>
+    <li>🤖 智能生成海报 · 填表即出图</li>
+    <li>全部 35 套精美海报模板</li>
+    <li>文案助手 · 100+ 套营销文案</li>
+    <li>营销灵感 · 实战技巧全解锁</li>
+    <li>导出无水印 · 高清大图</li>
+    <li>所有高级编辑功能</li>
+  </div>
+
+  <!-- 切换方式 -->
+  <div style="display:flex;gap:6px;margin-bottom:12px;">
+    <button class="btn btn-sm" id="payTabQr" style="flex:1;background:#667eea;color:white;" onclick="switchPayTab('qr')">📱 扫码付款</button>
+    <button class="btn btn-sm" id="payTabCode" style="flex:1;background:#f0f2f5;color:#666;" onclick="switchPayTab('code')">🔑 输入解锁码</button>
+  </div>
+
+  <!-- 扫码付款方式 -->
+  <div id="payMethodQr">
+    <div class="pay-qr-area" id="payQrArea" onclick="document.getElementById('qrUpload').click()">
+      <div id="payQrPlaceholder" class="placeholder">
+        <span class="big">📱</span>
+        点击选择收款码图片<br><span style="font-size:11px;color:#aaa;">从相册选择「平辉哥收款码」</span>
+      </div>
+      <img id="payQrImage" style="display:none;">
+      <input type="file" id="qrUpload" accept="image/*" hidden onchange="handleQrUpload(event)">
+    </div>
+    <div class="pay-actions">
+      <button class="btn btn-outline" onclick="closePayModal()">关闭</button>
+      <button class="btn btn-success" onclick="confirmPayment()">💰 已付款，等待开通</button>
+    </div>
+  </div>
+
+  <!-- 输入解锁码方式 -->
+  <div id="payMethodCode" style="display:none;">
+    <div style="background:#f8f9ff;border-radius:10px;padding:12px;margin-bottom:12px;">
+      <p style="font-size:12px;color:#888;margin-bottom:4px;">你的设备码：</p>
+      <p style="font-size:20px;font-weight:700;color:#333;letter-spacing:2px;font-family:monospace;" id="deviceIdDisplay"></p>
+      <p style="font-size:11px;color:#aaa;margin-top:4px;">把设备码发给老板，收到解锁码后填入下方</p>
+    </div>
+    <input type="text" id="unlockCodeInput" placeholder="输入解锁码"
+      style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:20px;text-align:center;outline:none;font-family:monospace;letter-spacing:3px;"
+      maxlength="8" onkeydown="if(event.key==='Enter')applyUnlockCode()">
+    <button class="btn btn-success btn-block" style="margin-top:8px;" onclick="applyUnlockCode()">🔓 验证解锁</button>
+  </div>
+
+  <div class="pay-verify-box" style="display:none;" id="payVerifyBox">
+    <p style="font-size:12px;color:#888;margin-bottom:6px;">店主已付款？点击下方按钮直接开通 👇</p>
+    <button class="btn btn-success btn-block" onclick="quickUnlock()">✅ 确认收款，开通全部功能</button>
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid #f0f0f0;">
+      <p style="font-size:11px;color:#bbb;margin-bottom:4px;">管理员备用验证码（非店主勿填）</p>
+      <input type="text" id="verifyCode" placeholder="输入验证码" maxlength="8" style="width:100%;padding:6px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:13px;text-align:center;outline:none;">
+      <button class="btn btn-sm btn-outline" style="margin-top:4px;width:100%;" onclick="verifyPayment()">🔓 验证码解锁</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ===== Logo 生成器弹窗（独立于编辑器） ===== -->
+<div class="pay-overlay" id="logoMakerOverlay">
+  <div class="pay-box" style="max-width:360px;">
+    <div style="text-align:right;"><button class="td-close" onclick="closeLogoMaker()">✕</button></div>
+    <div class="pay-icon">🎨</div>
+    <h2>生成店铺 Logo</h2>
+    <div style="margin:12px 0;">
+      <div class="smart-form-row">
+        <label>🏪 店铺名称</label>
+        <input type="text" id="lm_name" placeholder="输入店名" value="我的小店" oninput="previewLmLogo()">
+      </div>
+      <div class="smart-form-row">
+        <label>📝 副标题（选填）</label>
+        <input type="text" id="lm_sub" placeholder="如：餐厅、花店" oninput="previewLmLogo()">
+      </div>
+      <div class="smart-form-row">
+        <label>🎨 款式</label>
+        <select id="lm_layout" onchange="previewLmLogo()">
+          <option value="badge">🏅 徽章式 - 专业徽章</option>
+          <option value="stamp">🖌️ 印章式 - 传统印章</option>
+          <option value="classic">✨ 典藏式 - 典雅线条</option>
+          <option value="modern">💠 现代式 - 左右结构</option>
+          <option value="minimal">◆ 简约式 - 干净简洁</option>
+        </select>
+      </div>
+      <div class="smart-form-row">
+        <label>🎨 颜色</label>
+        <select id="lm_color" onchange="previewLmLogo()">
+          <option value="purple">🟣 典雅紫</option>
+          <option value="blue">🔵 商务蓝</option>
+          <option value="green">🟢 清新绿</option>
+          <option value="red">🔴 喜庆红</option>
+          <option value="gold">🟡 金色</option>
+          <option value="pink">💗 浪漫粉</option>
+          <option value="teal">💎 青碧</option>
+          <option value="dark">⚫ 经典黑</option>
+        </select>
+      </div>
+      <div style="text-align:center;margin:12px 0;">
+        <canvas id="lmPreviewCanvas" width="150" height="150" style="border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.1);background:#f8f9ff;"></canvas>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="generateLmLogo()">✨ 生成本店 Logo</button>
+  </div>
+</div>
+
+<!-- ===== 管理员入口（平辉哥专用） ===== -->
+<div style="text-align:center;padding:20px 0 30px;max-width:1200px;margin:0 auto;">
+  <span style="font-size:11px;color:#ddd;cursor:pointer;" onclick="showAdminEntry()">🔧 管理员入口</span>
+</div>
+
+<!-- ===== 管理员登录弹窗 ===== -->
+<div class="pay-overlay" id="adminOverlay">
+  <div class="pay-box" style="max-width:360px;">
+    <div class="pay-icon">👑</div>
+    <h2 id="adminTitle">管理员登录</h2>
+    <div id="adminLoginForm" style="margin:14px 0;">
+      <input type="password" id="adminCodeInput" placeholder="请输入管理员验证码"
+        style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:16px;text-align:center;outline:none;"
+        onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div class="pay-actions" id="adminLoginActions">
+      <button class="btn btn-outline" onclick="document.getElementById('adminOverlay').classList.remove('show')">取消</button>
+      <button class="btn btn-primary" onclick="adminLogin()">👑 进入管理模式</button>
+    </div>
+    <!-- 生成解锁码工具（登录后显示） -->
+    <div id="adminTool" style="display:none;">
+      <div style="background:#f8f9ff;border-radius:10px;padding:12px;margin-bottom:12px;text-align:left;">
+        <p style="font-size:12px;font-weight:600;color:#333;margin-bottom:6px;">🔑 生成顾客解锁码</p>
+        <p style="font-size:11px;color:#888;margin-bottom:8px;">顾客把他的设备码发给你，填到下面生成解锁码</p>
+        <label style="font-size:11px;font-weight:600;color:#555;">顾客设备码：</label>
+        <input type="text" id="adminDeviceInput" placeholder="输入顾客的设备码"
+          style="width:100%;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:14px;text-align:center;outline:none;font-family:monospace;margin-top:4px;"
+          oninput="generateCustomerCode()">
+        <div style="margin-top:8px;">
+          <label style="font-size:11px;font-weight:600;color:#555;">顾客解锁码：</label>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+            <input type="text" id="adminCodeOutput" readonly placeholder="填入设备码自动生成"
+              style="flex:1;padding:8px 10px;border:1.5px solid #2ecc71;border-radius:6px;font-size:20px;text-align:center;outline:none;font-family:monospace;letter-spacing:3px;background:#f0fff4;color:#27ae60;font-weight:700;">
+            <button class="btn btn-sm btn-success" onclick="copyAdminCode()">📋 复制</button>
+          </div>
+          <p style="font-size:11px;color:#aaa;margin-top:4px;">把这个解锁码发给顾客，他在付款弹窗里输入即可解锁</p>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="width:100%;" onclick="adminLogout()">退出管理模式</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  支付 / 试用管理
+// ============================================================
+const PAY = {
+  TRIAL_DAYS: 7,
+  PRICE: 9.9,
+  SECRET: 'kanghui9258',
+
+  // 生成设备唯一 ID
+  getDeviceId() {
+    let id = localStorage.getItem('xiaozhi_device_id');
+    if (!id) {
+      const raw = navigator.userAgent + screen.width + screen.height + Date.now() + Math.random();
+      id = this.hash(raw).substring(0, 12);
+      localStorage.setItem('xiaozhi_device_id', id);
+    }
+    return id;
+  },
+
+  // 简单的哈希
+  hash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) - h) + str.charCodeAt(i);
+      h = h & h;
+    }
+    return Math.abs(h).toString(16).padStart(8, '0');
+  },
+
+  // 生成解锁码（服务端/管理员用）
+  generateUnlockCode(deviceId) {
+    return this.hash(deviceId + this.SECRET).substring(0, 8).toUpperCase();
+  },
+
+  // 验证解锁码
+  checkUnlockCode(code) {
+    return code.toUpperCase() === this.generateUnlockCode(this.getDeviceId()).toUpperCase();
+  },
+
+  getFirstVisit() {
+    const v = localStorage.getItem('xiaozhi_first_visit');
+    if (!v) {
+      const now = Date.now();
+      localStorage.setItem('xiaozhi_first_visit', now);
+      return now;
+    }
+    return parseInt(v);
+  },
+  getPaid() {
+    return localStorage.getItem('xiaozhi_paid') === 'true';
+  },
+  setPaid() {
+    localStorage.setItem('xiaozhi_paid', 'true');
+  },
+  isAdmin() {
+    return localStorage.getItem('xiaozhi_admin') === 'true';
+  },
+  setAdmin() {
+    localStorage.setItem('xiaozhi_admin', 'true');
+    localStorage.setItem('xiaozhi_paid', 'true');
+  },
+  getRemainingDays() {
+    const first = this.getFirstVisit();
+    const elapsed = Date.now() - first;
+    const remaining = Math.ceil((this.TRIAL_DAYS * 24 * 60 * 60 * 1000 - elapsed) / (24 * 60 * 60 * 1000));
+    return Math.max(0, remaining);
+  },
+  isExpired() {
+    return this.getRemainingDays() <= 0 && !this.getPaid();
+  },
+  canAccess() {
+    return !this.isExpired() || this.getPaid();
+  },
+  hasQrCode() {
+    return localStorage.getItem('xiaozhi_qr') !== null;
+  },
+  getQrCode() {
+    return localStorage.getItem('xiaozhi_qr');
+  },
+  saveQrCode(dataUrl) {
+    localStorage.setItem('xiaozhi_qr', dataUrl);
+  }
+};
+
+// ============================================================
+//  试用 UI 更新
+// ============================================================
+function updateTrialBar() {
+  const bar = document.getElementById('trialBar');
+  const text = document.getElementById('trialBarText');
+  const days = document.getElementById('trialDays');
+  const btn = bar.querySelector('.btn-upgrade');
+
+  // 管理员模式：隐藏试用条
+  if (PAY.isAdmin()) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  if (PAY.getPaid()) {
+    bar.style.display = 'none';
+    return;
+  }
+
+  const remaining = PAY.getRemainingDays();
+  bar.style.display = 'flex';
+
+  if (remaining > 0) {
+    bar.classList.remove('expired');
+    text.innerHTML = '🔑 试用期还剩 <span class="days" id="trialDays">' + remaining + '</span> 天';
+    days.textContent = remaining;
+    btn.textContent = '💎 立即升级 9.9元';
+  } else {
+    bar.classList.add('expired');
+    text.innerHTML = '⏰ 试用已到期 · 部分功能已锁定';
+    btn.textContent = '🔓 解锁全部功能 9.9元';
+  }
+
+  // 更新 UI 锁定状态
+  applyFeatureLocks();
+}
+
+// ============================================================
+//  功能锁定
+// ============================================================
+function applyFeatureLocks() {
+  // 管理员模式：全部解锁
+  if (PAY.isAdmin()) {
+    document.getElementById('tabBtnCopy').classList.remove('locked');
+    document.getElementById('tabBtnTips').classList.remove('locked');
+    document.getElementById('tabBtnPromo').classList.remove('locked');
+    renderTemplates();
+    return;
+  }
+
+  const canAccess = PAY.canAccess();
+  const isPaid = PAY.getPaid();
+  const expired = PAY.isExpired();
+
+  // 更新 tab 按钮
+  const tabCopy = document.getElementById('tabBtnCopy');
+  const tabTips = document.getElementById('tabBtnTips');
+
+  tabCopy.classList.toggle('locked', expired && !isPaid);
+  tabTips.classList.toggle('locked', expired && !isPaid);
+
+  // 如果是到期未付费，点击写文案/营销灵感时弹出付费
+  // 这个在 switchTab 里处理
+
+  // 如果到期未付费，隐藏部分高级模板
+  renderTemplates();
+}
+
+// ============================================================
+//  支付弹窗
+// ============================================================
+function switchPayTab(tab) {
+  const qrBtn = document.getElementById('payTabQr');
+  const codeBtn = document.getElementById('payTabCode');
+  const qrPanel = document.getElementById('payMethodQr');
+  const codePanel = document.getElementById('payMethodCode');
+  if (tab === 'qr') {
+    qrBtn.style.background = '#667eea'; qrBtn.style.color = 'white';
+    codeBtn.style.background = '#f0f2f5'; codeBtn.style.color = '#666';
+    qrPanel.style.display = 'block'; codePanel.style.display = 'none';
+  } else {
+    codeBtn.style.background = '#667eea'; codeBtn.style.color = 'white';
+    qrBtn.style.background = '#f0f2f5'; qrBtn.style.color = '#666';
+    qrPanel.style.display = 'none'; codePanel.style.display = 'block';
+    document.getElementById('deviceIdDisplay').textContent = PAY.getDeviceId();
+  }
+}
+
+function applyUnlockCode() {
+  const code = document.getElementById('unlockCodeInput').value.trim();
+  if (!code) { showToast('请输入解锁码'); return; }
+  if (PAY.checkUnlockCode(code)) {
+    PAY.setPaid();
+    closePayModal();
+    updateTrialBar();
+    applyFeatureLocks();
+    showToast('🎉 解锁成功！已开通全部高级功能！');
+  } else {
+    showToast('❌ 解锁码错误，请联系老板确认');
+  }
+}
+
+function showPayModal() {
+  document.getElementById('payOverlay').classList.add('show');
+  // 如果已经上传过收款码，显示它
+  if (PAY.hasQrCode()) {
+    const img = document.getElementById('payQrImage');
+    img.src = PAY.getQrCode();
+    img.style.display = 'block';
+    document.getElementById('payQrPlaceholder').style.display = 'none';
+  }
+}
+
+function closePayModal() {
+  document.getElementById('payOverlay').classList.remove('show');
+}
+
+function handleQrUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const dataUrl = ev.target.result;
+    PAY.saveQrCode(dataUrl);
+    const img = document.getElementById('payQrImage');
+    img.src = dataUrl;
+    img.style.display = 'block';
+    document.getElementById('payQrPlaceholder').innerHTML = '✅ 收款码已上传';
+    showToast('📱 收款码已保存！店主扫码付款后点"已付款"');
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmPayment() {
+  document.getElementById('payVerifyBox').style.display = 'block';
+}
+function quickUnlock() {
+  PAY.setPaid();
+  closePayModal();
+  updateTrialBar();
+  applyFeatureLocks();
+  const active = document.querySelector('.tab-content.active');
+  if (active) { const id = active.id; if (id === 'tabCopy') switchTab('copy'); else if (id === 'tabTips') switchTab('tips'); }
+  showToast('🎉 恭喜！已解锁全部高级功能！');
+}
+
+function verifyPayment() {
+  // 管理员验证码：输入 kanghui9258 切换为管理员模式
+  const code = document.getElementById('verifyCode').value;
+  if (code === 'kanghui9258') {
+    PAY.setAdmin();
+    closePayModal();
+    updateTrialBar();
+    applyFeatureLocks();
+    showToast('👑 管理员模式已开启，所有功能解锁！');
+  } else {
+    showToast('❌ 验证码错误');
+  }
+}
+
+// ============================================================
+//  管理员入口
+// ============================================================
+function showAdminEntry() {
+  document.getElementById('adminOverlay').classList.add('show');
+  document.getElementById('adminCodeInput').value = '';
+  document.getElementById('adminCodeInput').focus();
+  document.getElementById('adminLoginForm').style.display = 'block';
+  document.getElementById('adminLoginActions').style.display = 'flex';
+  document.getElementById('adminTool').style.display = 'none';
+  document.getElementById('adminTitle').textContent = '管理员登录';
+}
+function adminLogin() {
+  const code = document.getElementById('adminCodeInput').value;
+  if (code === 'kanghui9258') {
+    PAY.setAdmin();
+    // 切换到工具界面
+    document.getElementById('adminLoginForm').style.display = 'none';
+    document.getElementById('adminLoginActions').style.display = 'none';
+    document.getElementById('adminTool').style.display = 'block';
+    document.getElementById('adminTitle').textContent = '👑 管理员工具';
+    document.getElementById('adminDeviceInput').value = '';
+    document.getElementById('adminCodeOutput').value = '';
+    updateTrialBar();
+    applyFeatureLocks();
+    showToast('👑 平辉哥，已进入管理模式！');
+  } else {
+    showToast('❌ 验证码错误');
+  }
+}
+function generateCustomerCode() {
+  const deviceId = document.getElementById('adminDeviceInput').value.trim();
+  if (deviceId.length >= 6) {
+    document.getElementById('adminCodeOutput').value = PAY.generateUnlockCode(deviceId);
+  } else {
+    document.getElementById('adminCodeOutput').value = '';
+  }
+}
+function copyAdminCode() {
+  const val = document.getElementById('adminCodeOutput').value;
+  if (!val) { showToast('请先输入设备码'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val).then(() => showToast('📋 解锁码已复制！'));
+  } else {
+    const ta = document.createElement('textarea'); ta.value = val;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 解锁码已复制！');
+  }
+}
+function adminLogout() {
+  document.getElementById('adminOverlay').classList.remove('show');
+  showToast('已退出管理模式');
+}
+
+// ============================================================
+//  Tab 切换（带权限检查）
+// ============================================================
+function switchTab(tab) {
+  // 管理员模式：跳过付费检查
+  if (!PAY.isAdmin()) {
+    // 权限检查：到期未付费时只能访问海报（基础版）
+    if (PAY.isExpired() && !PAY.getPaid() && (tab === 'copy' || tab === 'tips' || tab === 'promo')) {
+      showPayModal();
+      return;
+    }
+  }
+
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+  document.querySelectorAll('.tab-btn')[['poster','copy','tips','promo'].indexOf(tab)].classList.add('active');
+
+  // 如果是海报 tab，检查是否到期（到期只能编辑，但导出会加水印）
+}
+
+// ============================================================
+//  海报数据
+// ============================================================
+const POSTER_TEMPLATES = [
+  { id:'opening', name:'🎉 开业大吉', desc:'新店开业', bg:'#e74c3c', tc:'#fff',
+    title:'🎊 开业大吉', sub:'全场5折起 · 进店有礼', i1:'活动时间：即日起至月底', i2:'地址：XX路XX号', fs:42, fsub:22, premium:false },
+  { id:'sale', name:'🔥 限时特价', desc:'打折促销', bg:'#f39c12', tc:'#fff',
+    title:'🔥 限时特价', sub:'低至 5 折！', i1:'数量有限 · 售完即止', i2:'地址：XX路XX号', fs:44, fsub:30, premium:false },
+  { id:'clean', name:'🧹 简约促销', desc:'百搭风格', bg:'#ffffff', tc:'#2c3e50',
+    title:'大促销', sub:'全场特价 · 机会难得', i1:'活动时间：本周一至周日', i2:'地址：XX路XX号', fs:48, fsub:22, premium:false },
+  { id:'newproduct', name:'✨ 新品上市', desc:'新菜品到店', bg:'#2ecc71', tc:'#fff',
+    title:'✨ 新品上市', sub:'新鲜到店 · 欢迎品尝', i1:'首周尝鲜价 8 折', i2:'地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'promo', name:'💥 优惠活动', desc:'满减节庆', bg:'#9b59b6', tc:'#fff',
+    title:'💥 超值优惠', sub:'满100减20 · 会员双倍积分', i1:'活动最终解释权归本店所有', i2:'地址：XX路XX号', fs:38, fsub:20, premium:true },
+  { id:'fresh', name:'🥬 新鲜到货', desc:'蔬菜水果', bg:'#1abc9c', tc:'#fff',
+    title:'🥬 新鲜到货', sub:'产地直采 · 每日新鲜', i1:'今日特价：买一送一', i2:'地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'chinese', name:'🏮 国潮风', desc:'喜庆氛围', bg:'#c0392b', tc:'#f1c40f',
+    title:'🏮 喜迎贵客', sub:'感恩回馈 · 好礼相送', i1:'进店即送精美礼品一份', i2:'地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'delivery', name:'🛵 外卖配送', desc:'外卖宣传', bg:'#3498db', tc:'#fff',
+    title:'🛵 外卖配送', sub:'满30元免费配送', i1:'配送范围：周边3公里', i2:'电话：138xxxxxxx', fs:40, fsub:22, premium:true },
+
+  // ===== 餐饮美食 =====
+  { id:'food_restaurant', name:'🍜 餐厅推荐', desc:'餐饮美食', bg:'#d63031', tc:'#fff',
+    title:'🍜 今日推荐', sub:'招牌 {招牌菜} · 人均 {价格} 元', i1:'📍 XX路XX号', i2:'📞 138xxxxxxx', fs:40, fsub:22, premium:true },
+  { id:'food_lunch', name:'🥢 午餐特惠', desc:'午餐促销', bg:'#e17055', tc:'#fff',
+    title:'🥢 超值午餐', sub:'限时特价 {价格} 元', i1:'工作日 11:00-14:00', i2:'📍 地址：XX路XX号', fs:42, fsub:24, premium:true },
+  { id:'food_night', name:'🌙 夜宵档', desc:'夜宵烧烤', bg:'#2d3436', tc:'#fdcb6e',
+    title:'🌙 深夜食堂', sub:'夜宵营业至凌晨2点', i1:'🍻 啤酒买二送一', i2:'📍 XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'food_breakfast', name:'🌅 早餐特供', desc:'早点早餐', bg:'#fdcb6e', tc:'#2d3436',
+    title:'🌅 营养早餐', sub:'每天 6:00-10:00', i1:'🥟 {招牌菜} 仅 {价格} 元', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'food_weekend', name:'🎉 周末特惠', desc:'周末促销', bg:'#e84393', tc:'#fff',
+    title:'🎉 周末特惠', sub:'周六日全场 {折扣} 折', i1:'🍽️ 家庭套餐 {价格} 元', i2:'📍 地址：XX路XX号', fs:40, fsub:24, premium:true },
+  { id:'food_hotpot', name:'🍲 火锅必点', desc:'火锅烧烤', bg:'#c0392b', tc:'#fff',
+    title:'🍲 火锅季', sub:'锅底免费 · 菜品 {折扣} 折', i1:'🥩 招牌肥牛买一送一', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+
+  // ===== 服装鞋帽 =====
+  { id:'cloth_season', name:'👗 换季上新', desc:'服装换季', bg:'#fd79a8', tc:'#fff',
+    title:'👗 {季节} 新品', sub:'全场 {折扣} 折起', i1:'新款到店 · 欢迎试穿', i2:'📍 地址：XX路XX号', fs:40, fsub:24, premium:true },
+  { id:'cloth_sale', name:'🧥 清仓特卖', desc:'服装清仓', bg:'#6c5ce7', tc:'#fff',
+    title:'🧥 清仓特卖', sub:'低至 {折扣} 折', i1:'尺码不全 · 手慢无', i2:'📍 地址：XX路XX号', fs:44, fsub:28, premium:true },
+  { id:'cloth_new', name:'👠 新款到店', desc:'新款推荐', bg:'#e84393', tc:'#fff',
+    title:'👠 新款到店', sub:'{季节} 最in穿搭', i1:'首单 {折扣} 折体验', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'cloth_member', name:'💎 会员专享', desc:'会员折扣', bg:'#2d3436', tc:'#fdcb6e',
+    title:'💎 会员专享', sub:'全场 {折扣} 折 · 积分双倍', i1:'🎁 充值送 {赠品}', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+
+  // ===== 水果生鲜 =====
+  { id:'fruit_season', name:'🥝 当季鲜果', desc:'时令水果', bg:'#00b894', tc:'#fff',
+    title:'🥝 当季鲜果', sub:'产地直采 · 不甜不要钱', i1:'🍉 {水果1} {价格1}元/斤', i2:'🍇 {水果2} {价格2}元/斤', fs:40, fsub:22, premium:true },
+  { id:'fruit_gift', name:'🎁 水果礼盒', desc:'送礼佳品', bg:'#fdcb6e', tc:'#2d3436',
+    title:'🎁 精品水果礼盒', sub:'送礼自用两相宜', i1:'精美包装 · 全城配送', i2:'预订电话：138xxxxxxx', fs:38, fsub:20, premium:true },
+  { id:'fruit_direct', name:'🚜 产地直采', desc:'新鲜直送', bg:'#27ae60', tc:'#fff',
+    title:'🚜 产地直采', sub:'果园直送 · 新鲜看得见', i1:'每日限量 · 抢完即止', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'fruit_sale', name:'🍊 特价水果', desc:'水果促销', bg:'#f39c12', tc:'#fff',
+    title:'🍊 今日特价', sub:'新鲜水果低价抢购', i1:'🥝 {水果1} 仅 {价格1} 元', i2:'🍎 {水果2} 仅 {价格2} 元', fs:40, fsub:22, premium:true },
+
+  // ===== 鲜花绿植 =====
+  { id:'flower_shop', name:'💐 花店促销', desc:'鲜花绿植', bg:'#e84393', tc:'#fff',
+    title:'💐 鲜花特惠', sub:'全城配送 · 新鲜直达', i1:'预订电话：138xxxxxxx', i2:'地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'flower_gift', name:'🎀 鲜花礼盒', desc:'礼品鲜花', bg:'#fd79a8', tc:'#fff',
+    title:'🎀 精美花礼', sub:'{花名} 花束 {价格} 元起', i1:'🌸 花语：{花语}', i2:'📞 预订电话：138xxxxxxx', fs:38, fsub:20, premium:true },
+  { id:'flower_plant', name:'🌿 绿植特惠', desc:'盆栽绿植', bg:'#00b894', tc:'#fff',
+    title:'🌿 绿植特惠', sub:'净化空气 · 美化家居', i1:'小型盆栽 {价格} 元起', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+
+  // ===== 美容美发 =====
+  { id:'beauty_hair', name:'💇 美发优惠', desc:'理发烫染', bg:'#a29bfe', tc:'#fff',
+    title:'💇 美发特惠', sub:'洗剪吹 {价格} 元', i1:'烫染 {套餐价} 元起', i2:'📍 地址：XX路XX号', fs:40, fsub:24, premium:true },
+  { id:'beauty_skin', name:'🧴 美容护肤', desc:'美容SPA', bg:'#fab1a0', tc:'#2d3436',
+    title:'🧴 美容护肤', sub:'新客专享 {价格} 元', i1:'资深美容师 · 品质服务', i2:'预约电话：138xxxxxxx', fs:38, fsub:22, premium:true },
+  { id:'beauty_new', name:'💅 新客专享', desc:'新客引流', bg:'#fd79a8', tc:'#fff',
+    title:'💅 新客专享', sub:'首次体验 {价格} 元', i1:'💆 赠 {赠品} 一份', i2:'预约从速 · 名额有限', fs:40, fsub:22, premium:true },
+  { id:'beauty_member', name:'🎫 会员日', desc:'会员活动', bg:'#6c5ce7', tc:'#fff',
+    title:'🎫 会员日', sub:'每月 {会员日} 号', i1:'🎁 全场 {折扣} 折', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+
+  // ===== 超市便利店 =====
+  { id:'market_grocery', name:'🏪 超市特价', desc:'超市促销', bg:'#00cec9', tc:'#fff',
+    title:'🏪 超市特价日', sub:'全场 {折扣} 折起', i1:'🎁 会员双倍积分', i2:'📍 地址：XX路XX号', fs:42, fsub:22, premium:true },
+  { id:'market_daily', name:'🛒 日用特惠', desc:'日用品促销', bg:'#55efc4', tc:'#2d3436',
+    title:'🛒 日用特惠', sub:'买满 {金額} 元送 {赠品}', i1:'⏰ {时间}', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'market_weekly', name:'📅 每周特价', desc:'每周促销', bg:'#3498db', tc:'#fff',
+    title:'📅 本周特价', sub:'精选好货 · 限时特卖', i1:'💰 低至 {折扣} 折', i2:'📍 地址：XX路XX号', fs:40, fsub:24, premium:true },
+  { id:'market_new', name:'📦 新品上架', desc:'新品推荐', bg:'#2ecc71', tc:'#fff',
+    title:'📦 新品上架', sub:'{新品名} 新鲜到店', i1:'尝鲜价 {价格} 元', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+
+  // ===== 综合通用 =====
+  { id:'general_welcome', name:'🙌 欢迎光临', desc:'门头展示', bg:'#636e72', tc:'#fff',
+    title:'🙌 欢迎光临', sub:'{店名} 期待您的光临', i1:'📍 地址：XX路XX号', i2:'📞 138xxxxxxx', fs:42, fsub:22, premium:true },
+  { id:'general_thanks', name:'❤️ 感恩回馈', desc:'感谢顾客', bg:'#e84393', tc:'#fff',
+    title:'❤️ 感恩回馈', sub:'感谢新老顾客的支持', i1:'🎁 到店即送 {赠品}', i2:'📍 地址：XX路XX号', fs:38, fsub:20, premium:true },
+  { id:'general_anniversary', name:'🎂 周年庆典', desc:'店庆活动', bg:'#f39c12', tc:'#fff',
+    title:'🎂 周年庆典', sub:'感恩有你 · 一路相伴', i1:'🎁 全场 {折扣} 折', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'general_holiday', name:'🎊 节日快乐', desc:'节日祝福', bg:'#e74c3c', tc:'#fff',
+    title:'🎊 {节日名} 快乐', sub:'{店名} 祝您节日快乐', i1:'🎁 节日特惠 {折扣} 折', i2:'📍 地址：XX路XX号', fs:40, fsub:22, premium:true },
+  { id:'general_recruit', name:'🤝 会员招募', desc:'会员办理', bg:'#9b59b6', tc:'#fff',
+    title:'🤝 会员招募中', sub:'加入会员享 {折扣} 折', i1:'🎁 入会即送 {赠品}', i2:'📍 详情咨询店内', fs:40, fsub:22, premium:true },
+  { id:'general_qrcode', name:'📱 扫码关注', desc:'引导关注', bg:'#2d3436', tc:'#fff',
+    title:'📱 扫码关注', sub:'获取最新优惠信息', i1:'🎁 关注即送 {赠品}', i2:'📍 {店名}', fs:40, fsub:22, premium:true },
+];
+
+// ============================================================
+//  文案模板（精简保留）
+// ============================================================
+const COPY_INDUSTRIES = [
+  { id:'food', name:'🍜 餐饮美食' }, { id:'clothing', name:'👗 服装鞋帽' },
+  { id:'grocery', name:'🏪 超市便利店' }, { id:'fruit', name:'🍎 水果生鲜' },
+  { id:'flower', name:'💐 鲜花绿植' },
+  { id:'beauty', name:'💇 美容美发' }, { id:'general', name:'⭐ 综合通用' },
+];
+const COPY_OCCASIONS = [
+  { id:'opening', name:'🎉 开业大吉' }, { id:'sale', name:'🔥 限时促销' },
+  { id:'newproduct', name:'✨ 新品上市' }, { id:'holiday', name:'🎊 节日活动' },
+  { id:'daily', name:'📢 日常宣传' },
+];
+const COPY_TEMPLATES = {
+  'food':{
+    'opening':[{name:'开业火爆版',template:'🎊 {店名} 盛大开业啦！\n\n🔥 全场 {折扣} 折起\n🎁 进店即送 {赠品}\n📍 {地址}\n📞 {电话}\n欢迎新老顾客光临！'}],
+    'sale':[{name:'限时折扣',template:'🔥 {店名} 限时特惠\n\n⏰ {时间}\n全场 {折扣} 折\n💰 满 {金額} 减 {減額}\n📍 {地址} | 📞 {电话}'}],
+    'newproduct':[{name:'新品推荐',template:'✨ {店名} 上新啦！\n\n今日新品：{新品名}\n首周特价 {价格} 元\n📍 {地址} | 📞 {电话}'}],
+    'holiday':[{name:'节日特惠',template:'🎊 {节日名} 快乐！\n\n{店名} 感恩回馈\n节日套餐 {价格} 元起\n📍 {地址} | 📞 {电话}'}],
+    'daily':[{name:'日常推荐',template:'🥢 {店名}\n\n🍳 {招牌菜}\n人均 {价格} 元\n📍 {地址}\n📞 {电话}\n🕐 {营业时间}'}],
+  },
+  'clothing':{
+    'opening':[{name:'新店开业',template:'🎊 {店名} 盛大开业！\n\n👗 全场 {折扣} 折\n🎁 消费满 {金額} 送 {赠品}\n📍 {地址} | 📞 {电话}'}],
+    'sale':[{name:'换季促销',template:'🍂 换季清仓！{店名}\n\n👗 全场 {折扣} 折起\n📍 {地址} | 📞 {电话}'}],
+    'newproduct':[{name:'新款到店',template:'✨ {店名} 新款到店\n\n👗 {季节} 最新款\n首周 {折扣} 折\n📍 {地址} | 📞 {电话}'}],
+  },
+  'grocery':{
+    'opening':[{name:'开业酬宾',template:'🎊 {店名} 开业大酬宾！\n\n🏪 全场 {折扣} 折\n🎁 进店即送 {赠品}\n📍 {地址} | 📞 {电话}'}],
+    'sale':[{name:'特价日',template:'🔥 {店名} 会员特价日\n\n全场 {折扣} 折\n📍 {地址} | 📞 {电话}'}],
+  },
+  'fruit':{
+    'opening':[{name:'开业促销',template:'🍎 {店名} 开业啦！\n\n🥝 新鲜水果，产地直采\n开业特价 {价格} 元/斤起\n📍 {地址} | 📞 {电话}'}],
+    'sale':[{name:'今日特价',template:'🍎 今日特价\n\n{店名}\n{水果1} {价格1} 元/斤\n{水果2} {价格2} 元/斤\n📍 {地址}'}],
+  },
+  'flower':{
+    'opening':[{name:'花店开业',template:'💐 {店名} 盛大开业！\n\n🌹 全场鲜花 {折扣} 折\n🎁 进店即送 {赠品}\n🌸 开业花篮特惠 {价格} 元起\n\n用鲜花点亮每一天 ✨\n📍 {地址} | 📞 {电话}'}],
+    'sale':[{name:'限时特惠',template:'🔥 {店名} 限时特惠\n\n💐 鲜切花 {折扣} 折\n🌷 盆栽绿植买一送一\n\n鲜花不等人，快来选 🌸\n📍 {地址} | 📞 {电话}\n⏰ {时间}'}],
+    'newproduct':[{name:'新品到店',template:'✨ {店名} 新品到店\n\n🌸 {花名} 新鲜到货\n💐 花语：{花语}\n💰 尝鲜价 {价格} 元/束\n\n送她一份美好的心情 💕\n📍 {地址} | 📞 {电话}'}],
+    'holiday':[{name:'节日鲜花',template:'🎊 {节日名} 鲜花预订\n\n💐 {店名} 为您准备\n🌹 {花名} 花束 {价格} 元起\n🎁 提前预订享 {折扣} 折\n\n爱要大声说出来 ❤️\n📍 {地址} | 📞 {电话}'}],
+    'daily':[{name:'日常推荐',template:'💐 {店名}\n\n🌸 今日推荐：{花名}\n💰 {价格} 元/束\n\n一束花，一个好心情 ✨\n📍 {地址}\n📞 {电话}\n🕐 {营业时间}'}],
+  },
+  'beauty':{
+    'opening':[{name:'开业优惠',template:'💇 {店名} 开业大吉！\n\n✂️ 洗剪吹仅 {价格} 元\n🎁 办卡送 {赠品}\n📍 {地址} | 📞 {电话}'}],
+    'sale':[{name:'限时特惠',template:'🔥 {店名} 限时特惠\n\n💇 洗剪吹 {价格} 元\n预约从速 ⏰\n📍 {地址} | 📞 {电话}'}],
+  },
+  'general':{
+    'opening':[{name:'通用开业',template:'🎊 {店名} 开业啦！\n\n🔥 全场 {折扣} 折\n🎁 进店即送 {赠品}\n📍 {地址}\n📞 {电话}\n期待您的光临 🙌'}],
+    'sale':[{name:'通用促销',template:'🔥 {店名} 大促销！\n\n全场 {折扣} 折\n⏰ {时间}\n📍 {地址} | 📞 {电话}'}],
+    'newproduct':[{name:'新品预告',template:'✨ {店名} 新品来袭\n\n🌟 {新品名} 现已到店\n💰 {价格} 元\n📍 {地址} | 📞 {电话}'}],
+    'holiday':[{name:'节日祝福',template:'🎊 {节日名} 快乐！\n\n{店名} 祝您节日快乐\n🎁 节日特惠 {折扣} 折\n📍 {地址} | 📞 {电话}'}],
+    'daily':[{name:'日常宣传',template:'📢 {店名}\n\n👍 品质保证\n📍 {地址} | 📞 {电话}\n🕐 {营业时间}'}],
+  },
+};
+
+// ============================================================
+//  营销灵感
+// ============================================================
+const MARKETING_TIPS = [
+  { icon:'🎯', title:'进店率提升法', desc:'如何让路过的人走进你的店',
+    detail:'<ul><li><b>门口放爆品</b> — 最吸引人的产品摆门口显眼处</li><li><b>香味营销</b> — 餐饮让香味飘出去，气味是记忆点</li><li><b>小黑板</b> — 每天写今日特价，手写更有温度</li><li><b>音乐引流</b> — 热闹的店更容易吸引人</li></ul>' },
+  { icon:'💬', title:'朋友圈怎么发', desc:'不发广告，发什么',
+    detail:'<ul><li><b>发日常</b> — 备货、开店、顾客故事，真实就好</li><li><b>发"卖完了"</b> — 制造稀缺感</li><li><b>发顾客好评</b> — 截屏好评比自己说强百倍</li><li>⏰ 一天 2-3 条，不要刷屏</li></ul>' },
+  { icon:'🤝', title:'让顾客拉客', desc:'老带新的实用方法',
+    detail:'<ul><li>带朋友就送 — 双方各得一份赠品</li><li>建微信群 — 每天发专享福利价</li><li>集赞免费 — 集 20 赞到店领礼品</li><li>推荐卡 — 每消费给一张推荐卡，朋友来双方受益</li></ul>' },
+  { icon:'💰', title:'小额充值锁客', desc:'让顾客充值的技巧',
+    detail:'<ul><li>门槛要低 — 充50送10，人人都愿意</li><li>"今天充值这单免单"比"充50送10"效果好3倍</li><li>消费10次送1次，比直接打折更让人想回来</li></ul>' },
+  { icon:'📱', title:'短视频引流', desc:'实体店怎么做短视频',
+    detail:'<ul><li>手机拍摄就够了，真实最重要</li><li>拍制作过程、打包过程、顾客排队</li><li>发布时加店铺定位</li><li>一周 3-4 条，坚持就行</li></ul>' },
+  { icon:'📋', title:'菜单/价签设计', desc:'这样写销量翻倍',
+    detail:'<ul><li>主推产品放右上角</li><li>先放高价商品，让中价显得划算</li><li>去掉"元"字，直接写数字</li><li>"今日特供"比普通价格更有吸引力</li></ul>' },
+  { icon:'🎁', title:'赠品策略', desc:'怎么送最有效',
+    detail:'<ul><li>送实用的 — 纸巾、购物袋</li><li>送"下次能用"的 — 优惠券</li><li>送有店名的 — 帮打广告</li><li>超出预期 — 买20送5块的东西，顾客会记住你</li></ul>' },
+  { icon:'💡', title:'淡季怎么办', desc:'生意淡时做什么',
+    detail:'<ul><li>整理升级 — 重新装门头、更新菜单</li><li>发福利 — 淡季特惠价</li><li>学新东西 — 学短视频、学拍照</li><li>维护老客 — 发消息问候，送专属优惠</li></ul>' },
+  { icon:'👋', title:'让顾客记住你', desc:'差异化服务留客',
+    detail:'<ul><li>记住熟客名字口味 — 比任何广告有用</li><li>超出一点预期 — 多送一个橘子、一个小凉菜</li><li>打造一个记忆点 — 你家独有的东西</li></ul>' },
+  { icon:'⏰', title:'分时段营销', desc:'一天中不同时间的打法',
+    detail:'<ul><li>早上 — 发早安朋友圈配新品图</li><li>中午 — 发"正在排队"制造人气</li><li>下午 — 下午茶限时特惠</li><li>晚上 — 预告今晚特色</li><li>睡前 — 发营业总结，拉近距离</li></ul>' },
+];
+
+// ============================================================
+//  海报状态
+// ============================================================
+let posterState = {
+  template:null, bgColor:'#ffffff', bgImage:null,
+  logoImage:null, texts:[], selectedTextIndex:-1
+};
+
+// ============================================================
+//  渲染模板
+// ============================================================
+function renderTemplates() {
+  const grid = document.getElementById('templateGrid');
+  const canAccess = PAY.canAccess();
+  grid.innerHTML = POSTER_TEMPLATES.map(t => {
+    const isPremium = t.premium;
+    const locked = isPremium && PAY.isExpired() && !PAY.getPaid();
+    const s = `background:${t.bg}; color:${t.tc}`;
+    return `<div class="template-card ${locked?'premium':''}" onclick="${locked?'showPayModal()':'selectPosterTemplate(\''+t.id+'\')'}">
+      <div class="preview" style="${s}">
+        <div class="mini-title">${(t.title||'').replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g,'')||'标题'}</div>
+        <div class="mini-sub">${t.sub}</div>
+      </div>
+      <div class="info"><div class="name">${t.name}${isPremium?' <span class="premium-tag">专业版</span>':''}</div><div class="desc">${t.desc}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+//  海报编辑函数（同前，略调整）
+// ============================================================
+function selectPosterTemplate(id) {
+  const tpl = POSTER_TEMPLATES.find(t => t.id === id);
+  if (!tpl) return;
+  posterState.template = tpl;
+  posterState.bgColor = tpl.bg;
+  posterState.bgImage = null; posterState.logoImage = null; posterState.selectedTextIndex = -1;
+  posterState.texts = [
+    { id:'title', label:'标题', content:tpl.title, x:300, y:260, fs:tpl.fs, color:tpl.tc, weight:'bold', align:'center' },
+    { id:'subtitle', label:'副标题', content:tpl.sub, x:300, y:340, fs:tpl.fsub, color:tpl.tc, weight:'bold', align:'center' },
+    { id:'info1', label:'信息1', content:tpl.i1, x:300, y:520, fs:20, color:tpl.tc, weight:'normal', align:'center' },
+    { id:'info2', label:'信息2', content:tpl.i2, x:300, y:560, fs:20, color:tpl.tc, weight:'normal', align:'center' },
+  ];
+  document.getElementById('bgColor').value = tpl.bg;
+  document.getElementById('bgPreview').innerHTML = '+ 点击上传';
+  document.getElementById('bgUploadArea').classList.remove('has-image');
+  document.getElementById('logoPreview').innerHTML = '+ 点击上传';
+  document.getElementById('logoUploadArea').classList.remove('has-image');
+  document.getElementById('templateSelector').style.display = 'none';
+  document.getElementById('editorArea').style.display = 'block';
+  renderTextList(); updateCanvas();
+  showToast('✅ 已选择「' + tpl.name + '」');
+}
+function backToTemplates() {
+  document.getElementById('templateSelector').style.display = 'block';
+  document.getElementById('editorArea').style.display = 'none';
+  posterState.selectedTextIndex = -1;
+}
+function renderTextList() {
+  const list = document.getElementById('textList');
+  list.innerHTML = posterState.texts.map((t,i) =>
+    `<div class="text-item ${i===posterState.selectedTextIndex?'active':''}" onclick="selectText(${i})">
+      <div class="ti-label">${t.label}</div><div class="ti-content">${t.content||'(空)'}</div>
+    </div>`
+  ).join('');
+}
+function selectText(idx) {
+  posterState.selectedTextIndex = idx;
+  const t = posterState.texts[idx]; if(!t) return;
+  document.getElementById('textDetail').style.display = 'block';
+  document.getElementById('editTextContent').value = t.content;
+  document.getElementById('editFontSize').value = t.fs;
+  document.getElementById('fontSizeVal').textContent = t.fs + 'px';
+  document.getElementById('editTextColor').value = t.color;
+  document.getElementById('editFontWeight').value = t.weight;
+  document.getElementById('editTextAlign').value = t.align;
+  renderTextList();
+}
+function updateTextContent(v) {
+  const t = posterState.texts[posterState.selectedTextIndex]; if(!t) return;
+  t.content = v; renderTextList(); updateCanvas();
+}
+function updateTextStyle() {
+  const t = posterState.texts[posterState.selectedTextIndex]; if(!t) return;
+  t.fs = parseInt(document.getElementById('editFontSize').value);
+  t.color = document.getElementById('editTextColor').value;
+  t.weight = document.getElementById('editFontWeight').value;
+  t.align = document.getElementById('editTextAlign').value;
+  document.getElementById('fontSizeVal').textContent = t.fs + 'px';
+  renderTextList(); updateCanvas();
+}
+function handleBgUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      posterState.bgImage = img; posterState.bgColor = '#000';
+      document.getElementById('bgColor').value = '#000000';
+      document.getElementById('bgPreview').innerHTML = `<img src="${ev.target.result}"><div class="remove-img" onclick="event.stopPropagation();removeBg()">✕</div>`;
+      document.getElementById('bgUploadArea').classList.add('has-image');
+      updateCanvas();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeBg() {
+  posterState.bgImage = null;
+  posterState.bgColor = posterState.template ? posterState.template.bg : '#fff';
+  document.getElementById('bgColor').value = posterState.bgColor;
+  document.getElementById('bgPreview').innerHTML = '+ 点击上传';
+  document.getElementById('bgUploadArea').classList.remove('has-image');
+  updateCanvas();
+}
+function handleLogoUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      posterState.logoImage = img;
+      document.getElementById('logoPreview').innerHTML = `<img src="${ev.target.result}"><div class="remove-img" onclick="event.stopPropagation();removeLogo()">✕</div>`;
+      document.getElementById('logoUploadArea').classList.add('has-image');
+      updateCanvas();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo() {
+  posterState.logoImage = null;
+  document.getElementById('logoPreview').innerHTML = '+ 点击上传';
+  document.getElementById('logoUploadArea').classList.remove('has-image');
+  updateCanvas();
+}
+
+// ============================================================
+//  Logo 生成器（个性化版）
+// ============================================================
+const LOGO_LAYOUTS = [
+  { id:'badge', name:'徽章式', icon:'🏅', desc:'专业徽章，适合餐厅服装店' },
+  { id:'stamp', name:'印章式', icon:'🖌️', desc:'传统印章，适合国风店铺' },
+  { id:'classic', name:'典藏式', icon:'✨', desc:'典雅线条，适合花店美容院' },
+  { id:'modern', name:'现代式', icon:'💠', desc:'左右结构，适合潮店' },
+  { id:'minimal', name:'简约式', icon:'◆', desc:'干净简洁，百搭风格' },
+];
+
+const LOGO_COLORS = [
+  { id:'purple', name:'紫', bg1:'#667eea', bg2:'#764ba2', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+  { id:'blue', name:'蓝', bg1:'#3498db', bg2:'#2980b9', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+  { id:'green', name:'绿', bg1:'#2ecc71', bg2:'#27ae60', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+  { id:'red', name:'红', bg1:'#e74c3c', bg2:'#c0392b', text:'#f1c40f', accent:'rgba(241,196,15,0.3)' },
+  { id:'gold', name:'金', bg1:'#f39c12', bg2:'#e67e22', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+  { id:'dark', name:'黑', bg1:'#2d3436', bg2:'#636e72', text:'#fff', accent:'rgba(255,255,255,0.2)' },
+  { id:'pink', name:'粉', bg1:'#fd79a8', bg2:'#e84393', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+  { id:'teal', name:'青', bg1:'#00cec9', bg2:'#00b894', text:'#fff', accent:'rgba(255,255,255,0.3)' },
+];
+
+let selectedLayout = 'badge';
+let selectedLogoColor = 'purple';
+
+function initLogoGenerators() {
+  renderLayoutGrid();
+  renderColorGrid();
+  setTimeout(previewGeneratedLogo, 100);
+}
+
+// Logo 弹窗
+function showLogoMaker() {
+  document.getElementById('logoMakerOverlay').classList.add('show');
+  previewLmLogo();
+}
+function closeLogoMaker() {
+  document.getElementById('logoMakerOverlay').classList.remove('show');
+}
+
+// 最简 Logo 生成（直接生成，无弹窗）
+function quickMakeLogo() {
+  const name = document.getElementById('qs_logo_name').value.trim();
+  if (!name) { showToast('请输入店名'); return; }
+  const size = 300;
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  drawLogoOnCanvas(c, name, '', 'badge', 'purple');
+  c.toBlob(function(blob) {
+    const img = new Image();
+    img.onload = function() {
+      posterState.logoImage = img;
+      document.getElementById('logoPreview').innerHTML = `<img src="${URL.createObjectURL(blob)}"><div class="remove-img" onclick="event.stopPropagation();removeLogo()">✕ 移除</div>`;
+      document.getElementById('logoUploadArea').classList.add('has-image');
+      updateCanvas();
+      showToast(`✅ 「${name}」Logo 已生成！`);
+    };
+    img.src = URL.createObjectURL(blob);
+  });
+}
+function previewLmLogo() {
+  try {
+    const name = document.getElementById('lm_name').value || '店名';
+    const sub = document.getElementById('lm_sub').value || '';
+    const lid = document.getElementById('lm_layout').value;
+    const cid = document.getElementById('lm_color').value;
+    const canvas = document.getElementById('lmPreviewCanvas');
+    drawLogoOnCanvas(canvas, name, sub, lid, cid);
+  } catch(e) { console.log('preview error:', e); }
+}
+function generateLmLogo() {
+  const name = document.getElementById('lm_name').value.trim();
+  if (!name) { showToast('请输入店名'); return; }
+  const sub = document.getElementById('lm_sub').value.trim();
+  const lid = document.getElementById('lm_layout').value;
+  const cid = document.getElementById('lm_color').value;
+  const size = 300;
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  drawLogoOnCanvas(c, name, sub, lid, cid);
+  const dataUrl = c.toDataURL('image/png');
+  const img = new Image();
+  img.onload = function() {
+    posterState.logoImage = img;
+    document.getElementById('logoPreview').innerHTML = `<img src="${dataUrl}"><div class="remove-img" onclick="event.stopPropagation();removeLogo()">✕ 移除</div>`;
+    document.getElementById('logoUploadArea').classList.add('has-image');
+    updateCanvas();
+    closeLogoMaker();
+    showToast(`✅ 「${name}」Logo 已生成并使用！`);
+  };
+  img.src = dataUrl;
+}
+
+function renderLayoutGrid() {
+  const grid = document.querySelector('.logo-layout-grid');
+  if (!grid) { console.log('logo-layout-grid not found'); return; }
+  grid.innerHTML = LOGO_LAYOUTS.map((l, idx) =>
+    `<div class="logo-layout-item ${idx===0?'active':''}" data-layout="${l.id}">
+      <div class="lli-icon">${l.icon}</div>
+      <div class="lli-name">${l.name}</div>
+    </div>`
+  ).join('');
+  // 事件委托：点击网格触发
+  grid.onclick = function(e) {
+    const item = e.target.closest('.logo-layout-item');
+    if (item) {
+      const id = item.dataset.layout;
+      selectedLayout = id;
+      document.querySelectorAll('.logo-layout-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      previewGeneratedLogo();
+    }
+  };
+}
+
+function renderColorGrid() {
+  const grid = document.querySelector('.logo-color-grid');
+  if (!grid) { console.log('logo-color-grid not found'); return; }
+  grid.innerHTML = LOGO_COLORS.map((c, idx) =>
+    `<div class="logo-color-item ${idx===0?'active':''}" data-color="${c.id}" style="background:linear-gradient(135deg,${c.bg1},${c.bg2})" title="${c.name}"></div>`
+  ).join('');
+  // 事件委托
+  grid.onclick = function(e) {
+    const item = e.target.closest('.logo-color-item');
+    if (item) {
+      const id = item.dataset.color;
+      selectedLogoColor = id;
+      document.querySelectorAll('.logo-color-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+      previewGeneratedLogo();
+    }
+  };
+}
+
+function selectLayout(id) {
+  selectedLayout = id;
+  document.querySelectorAll('.logo-layout-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.logo-layout-item[data-layout="${id}"]`).classList.add('active');
+  previewGeneratedLogo();
+}
+
+function selectLogoColor(id) {
+  selectedLogoColor = id;
+  document.querySelectorAll('.logo-color-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.logo-color-item[data-color="${id}"]`).classList.add('active');
+  previewGeneratedLogo();
+}
+
+function drawLogoOnCanvas(canvas, name, subtitle, layoutId, colorId) {
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const color = LOGO_COLORS.find(c => c.id === colorId) || LOGO_COLORS[0];
+  const h = size, w = size;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // 根据布局绘制
+  switch (layoutId) {
+    case 'badge': drawBadgeLogo(ctx, w, h, name, subtitle, color); break;
+    case 'stamp': drawStampLogo(ctx, w, h, name, subtitle, color); break;
+    case 'classic': drawClassicLogo(ctx, w, h, name, subtitle, color); break;
+    case 'modern': drawModernLogo(ctx, w, h, name, subtitle, color); break;
+    case 'minimal': drawMinimalLogo(ctx, w, h, name, subtitle, color); break;
+    default: drawBadgeLogo(ctx, w, h, name, subtitle, color);
+  }
+}
+
+// ----- 徽章式 -----
+function drawBadgeLogo(ctx, w, h, name, subtitle, color) {
+  const pad = 8, r = 14;
+  // 圆角矩形背景
+  const bg = ctx.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0, color.bg1); bg.addColorStop(1, color.bg2);
+  roundRect(ctx, pad, pad, w-pad*2, h-pad*2, r);
+  ctx.fillStyle = bg; ctx.fill();
+  // 外边框
+  ctx.strokeStyle = color.accent; ctx.lineWidth = 2;
+  roundRect(ctx, pad+3, pad+3, w-pad*2-6, h-pad*2-6, r-2);
+  ctx.stroke();
+  // 顶部装饰星
+  ctx.fillStyle = color.accent; ctx.font = `${w*0.12}px sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('✦', w/2, pad + 6);
+  // 名称
+  const chars = name.trim() || '店';
+  const fontSize = Math.min(w * 0.28, (w - 24) / chars.length * 1.2);
+  ctx.fillStyle = color.text;
+  ctx.font = `bold ${fontSize}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+  ctx.fillText(chars, w/2, h * 0.55);
+  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  // 分割线
+  ctx.strokeStyle = color.accent; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(w*0.25, h*0.72); ctx.lineTo(w*0.75, h*0.72); ctx.stroke();
+  // 副标题
+  const sub = subtitle || name ? (name.includes('店')||name.includes('馆')||name.includes('坊') ? '' : '· 精品 ·') : '· 精品 ·';
+  if (sub) {
+    ctx.fillStyle = color.accent;
+    ctx.font = `${w*0.08}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(sub, w/2, h*0.74);
+  }
+}
+
+// ----- 印章式 -----
+function drawStampLogo(ctx, w, h, name, subtitle, color) {
+  const cx = w/2, cy = h/2, r = w/2 - 10;
+  // 外圈
+  ctx.strokeStyle = color.bg1; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  // 内圈
+  ctx.strokeStyle = color.bg1; ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.arc(cx, cy, r-6, 0, Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  // 填充半透明
+  ctx.fillStyle = color.bg1 + '15';
+  ctx.beginPath(); ctx.arc(cx, cy, r-3, 0, Math.PI*2); ctx.fill();
+  // 左上装饰
+  ctx.fillStyle = color.bg1;
+  ctx.font = `${w*0.1}px sans-serif`; ctx.textAlign = 'center';
+  ctx.fillText('★', cx, cy - h*0.2);
+  // 名称
+  const chars = name.trim() || '店';
+  const fs = Math.min(w*0.3, (w-30)/chars.length*1.3);
+  ctx.fillStyle = color.bg1;
+  ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(chars, cx, cy + 2);
+  // 底部小字
+  const sub = subtitle || (name ? '' : '精品');
+  if (sub) {
+    ctx.fillStyle = color.bg1; ctx.globalAlpha = 0.7;
+    ctx.font = `${w*0.09}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText(sub, cx, h - r + h*0.1);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ----- 典藏式 -----
+function drawClassicLogo(ctx, w, h, name, subtitle, color) {
+  const bg = ctx.createLinearGradient(0,0,w,h);
+  bg.addColorStop(0, color.bg1); bg.addColorStop(1, color.bg2);
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(w/2,h/2,w/2,0,Math.PI*2); ctx.fill();
+  // 顶部弧线装饰
+  ctx.strokeStyle = color.accent; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(w/2, h*0.52, w*0.22, Math.PI*1.15, Math.PI*0.85, true); ctx.stroke();
+  // 菱形装饰
+  ctx.fillStyle = color.accent;
+  ctx.beginPath();
+  ctx.moveTo(w/2, h*0.32);
+  ctx.lineTo(w/2+6, h*0.38);
+  ctx.lineTo(w/2, h*0.44);
+  ctx.lineTo(w/2-6, h*0.38);
+  ctx.closePath(); ctx.fill();
+  // 名称
+  const chars = name.trim() || '店';
+  const fs = Math.min(w*0.28, (w-24)/chars.length*1.2);
+  ctx.fillStyle = color.text;
+  ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.12)'; ctx.shadowBlur = 2; ctx.shadowOffsetX = 1; ctx.shadowOffsetY = 1;
+  ctx.fillText(chars, w/2, h*0.56);
+  ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  // 底部弧线
+  ctx.strokeStyle = color.accent; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(w/2, h*0.76, w*0.18, Math.PI*1.15, Math.PI*0.85, false); ctx.stroke();
+  // 副标题
+  const sub = subtitle || (name ? '' : '精品');
+  if (sub) {
+    ctx.fillStyle = color.accent;
+    ctx.font = `${w*0.09}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(sub, w/2, h*0.74);
+  }
+}
+
+// ----- 现代式 -----
+function drawModernLogo(ctx, w, h, name, subtitle, color) {
+  // 左侧图标区域
+  const iconSize = w*0.45;
+  const iconX = w*0.08, iconY = (h-iconSize)/2;
+  const bg = ctx.createLinearGradient(iconX,iconY,iconX+iconSize,iconY+iconSize);
+  bg.addColorStop(0, color.bg1); bg.addColorStop(1, color.bg2);
+  roundRect(ctx, iconX, iconY, iconSize, iconSize, 10);
+  ctx.fillStyle = bg; ctx.fill();
+  // 图标内首字
+  const initial = (name.trim()||'店').substring(0,1);
+  ctx.fillStyle = color.text;
+  ctx.font = `bold ${iconSize*0.5}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(initial, iconX+iconSize/2, iconY+iconSize/2+1);
+  // 右侧名称
+  const textX = iconX + iconSize + w*0.05;
+  const textW = w - textX - w*0.05;
+  const displayName = name.trim() || '店名';
+  const fs = Math.min(w*0.2, (textW-4)/displayName.length*1.5);
+  ctx.fillStyle = color.bg1;
+  ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(displayName, textX, h*0.45);
+  // 副标题
+  const sub = subtitle || (name ? '' : '精品店');
+  if (sub) {
+    ctx.fillStyle = color.bg1; ctx.globalAlpha = 0.6;
+    ctx.font = `${w*0.09}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(sub, textX, h*0.58);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ----- 简约式 -----
+function drawMinimalLogo(ctx, w, h, name, subtitle, color) {
+  // 顶部细线
+  ctx.strokeStyle = color.bg1; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(w*0.15, h*0.2); ctx.lineTo(w*0.85, h*0.2); ctx.stroke();
+  // 左装饰点
+  ctx.fillStyle = color.bg1;
+  ctx.beginPath(); ctx.arc(w*0.08, h*0.2, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(w*0.92, h*0.2, 4, 0, Math.PI*2); ctx.fill();
+  // 名称
+  const chars = name.trim() || '店名';
+  const fs = Math.min(w*0.32, (w-30)/chars.length*1.3);
+  ctx.fillStyle = color.bg1;
+  ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(chars, w/2, h*0.48);
+  // 底部细线
+  ctx.strokeStyle = color.bg1; ctx.lineWidth = 1.5;
+  ctx.globalAlpha = 0.5;
+  ctx.beginPath(); ctx.moveTo(w*0.2, h*0.75); ctx.lineTo(w*0.8, h*0.75); ctx.stroke();
+  ctx.globalAlpha = 1;
+  // 副标题
+  const sub = subtitle || (name ? '' : '精品店');
+  if (sub) {
+    ctx.fillStyle = color.bg1; ctx.globalAlpha = 0.5;
+    ctx.font = `${w*0.1}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(sub, w/2, h*0.76);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
+}
+
+function previewGeneratedLogo() {
+  const name = document.getElementById('logoNameInput').value || '店名';
+  const sub = document.getElementById('logoSubInput').value || '';
+  const lid = document.getElementById('logoLayoutSelect').value;
+  const cid = document.getElementById('logoColorSelect').value;
+  const canvas = document.getElementById('logoPreviewCanvas');
+  drawLogoOnCanvas(canvas, name, sub, lid, cid);
+  document.getElementById('logoPreviewBox').style.display = 'flex';
+  document.getElementById('logoPreviewName').textContent = name || '店名';
+}
+
+function generateLogo() {
+  const name = document.getElementById('logoNameInput').value.trim();
+  if (!name) { showToast('请输入店名'); return; }
+  const sub = document.getElementById('logoSubInput').value.trim();
+  const lid = document.getElementById('logoLayoutSelect').value;
+  const cid = document.getElementById('logoColorSelect').value;
+  const size = 300;
+  const c = document.createElement('canvas');
+  c.width = size; c.height = size;
+  drawLogoOnCanvas(c, name, sub, lid, cid);
+  const dataUrl = c.toDataURL('image/png');
+  const img = new Image();
+  img.onload = function() {
+    posterState.logoImage = img;
+    document.getElementById('logoPreview').innerHTML = `<img src="${dataUrl}"><div class="remove-img" onclick="event.stopPropagation();removeLogo()">✕ 移除</div>`;
+    document.getElementById('logoUploadArea').classList.add('has-image');
+    updateCanvas();
+    showToast(`✅ 「${name}」个性化 Logo 已生成！`);
+  };
+  img.src = dataUrl;
+}
+function updateCanvas() {
+  const c = document.getElementById('posterCanvas');
+  const ctx = c.getContext('2d'); const W=600, H=900;
+  c.width=W; c.height=H;
+  if (posterState.bgImage) { ctx.drawImage(posterState.bgImage,0,0,W,H); }
+  else { ctx.fillStyle=posterState.bgColor||'#fff'; ctx.fillRect(0,0,W,H); }
+  if (posterState.logoImage) {
+    const s=80,lx=(W-s)/2,ly=80;
+    ctx.save(); ctx.beginPath(); ctx.arc(lx+s/2,ly+s/2,s/2,0,Math.PI*2); ctx.closePath(); ctx.clip();
+    ctx.drawImage(posterState.logoImage,lx,ly,s,s); ctx.restore();
+  }
+  if (!posterState.bgImage) {
+    const tc = posterState.texts[0]?posterState.texts[0].color:'#fff';
+    ctx.save(); ctx.globalAlpha=0.25;
+    ctx.strokeStyle=tc; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(100,200); ctx.lineTo(500,200); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(100,610); ctx.lineTo(500,610); ctx.stroke();
+    ctx.restore();
+  }
+  // 水印（到期未付费时显示）
+  if (PAY.isExpired() && !PAY.getPaid()) {
+    ctx.save(); ctx.globalAlpha=0.4;
+    ctx.fillStyle='#e74c3c'; ctx.font='bold 18px sans-serif'; ctx.textAlign='center';
+    // 斜角水印
+    ctx.translate(W/2,H/2);
+    ctx.rotate(-0.4);
+    ctx.fillText('体验版',0,0);
+    ctx.restore();
+  }
+  ctx.save(); ctx.globalAlpha=0.1;
+  ctx.fillStyle=posterState.texts[0]?posterState.texts[0].color:'#333';
+  ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('小智店主工具箱',W/2,H-14);
+  ctx.restore();
+  for (const t of posterState.texts) {
+    ctx.save(); ctx.fillStyle=t.color;
+    ctx.font=(t.weight==='bold'?'bold ':'')+t.fs+'px "PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textAlign=t.align||'center'; ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,0.1)'; ctx.shadowBlur=3; ctx.shadowOffsetX=1; ctx.shadowOffsetY=1;
+    let x=t.x; if(t.align==='left') x=40; else if(t.align==='right') x=560;
+    ctx.fillText(t.content||'',x,t.y);
+    ctx.restore();
+  }
+}
+function exportPNG() {
+  // 到期未付费，限制导出
+  if (PAY.isExpired() && !PAY.getPaid()) {
+    showPayModal();
+    return;
+  }
+  const link = document.createElement('a');
+  link.download = '海报_'+(posterState.template?posterState.template.name.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g,''):'poster')+'.png';
+  link.href = document.getElementById('posterCanvas').toDataURL('image/png');
+  link.click(); showToast('✅ 海报已导出！');
+}
+function printPoster() {
+  if (PAY.isExpired() && !PAY.getPaid()) { showPayModal(); return; }
+  const img = document.getElementById('posterCanvas').toDataURL('image/png');
+  const win = window.open('','_blank');
+  win.document.write('<html><head><title>打印</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh}img{max-width:100%}</style></head><body><img src="'+img+'" onload="window.print()"></body></html>');
+  win.document.close(); showToast('🖨️ 打印窗口已打开');
+}
+
+// ============================================================
+//  智能生成海报
+// ============================================================
+const SMART_COLORS = [
+  { id:'purple', name:'典雅紫', bg1:'#667eea', bg2:'#764ba2' },
+  { id:'blue', name:'商务蓝', bg1:'#3498db', bg2:'#2980b9' },
+  { id:'green', name:'清新绿', bg1:'#2ecc71', bg2:'#27ae60' },
+  { id:'red', name:'喜庆红', bg1:'#e74c3c', bg2:'#c0392b' },
+  { id:'gold', name:'金色', bg1:'#f39c12', bg2:'#e67e22' },
+  { id:'pink', name:'浪漫粉', bg1:'#fd79a8', bg2:'#e84393' },
+  { id:'teal', name:'青碧', bg1:'#00cec9', bg2:'#00b894' },
+  { id:'dark', name:'经典黑', bg1:'#2d3436', bg2:'#636e72' },
+];
+let smartColorId = 'purple';
+let smartResultData = null; // 保存生成的 canvas 数据
+
+function initSmartColorGrid() {
+  const grid = document.getElementById('smartColorGrid');
+  if (!grid) return;
+  grid.innerHTML = SMART_COLORS.map(c =>
+    `<div class="smart-color-item ${c.id==='purple'?'active':''}" data-sc="${c.id}" style="background:linear-gradient(135deg,${c.bg1},${c.bg2})" onclick="selectSmartColor('${c.id}')" title="${c.name}"></div>`
+  ).join('');
+}
+
+function selectSmartColor(id) {
+  smartColorId = id;
+  document.querySelectorAll('.smart-color-item').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.smart-color-item[data-sc="${id}"]`).classList.add('active');
+}
+
+function switchPosterMode(mode) {
+  const form = document.getElementById('smartForm');
+  const preview = document.getElementById('smartPreview');
+  const selector = document.getElementById('templateSelector');
+  const editor = document.getElementById('editorArea');
+  form.classList.toggle('show', mode === 'smart');
+  preview.classList.toggle('show', false);
+  selector.style.display = mode === 'pick' ? 'block' : 'none';
+  editor.style.display = 'none';
+  document.getElementById('modeSmart').classList.toggle('active', mode === 'smart');
+  document.getElementById('modePick').classList.toggle('active', mode === 'pick');
+}
+
+function smartGenerate() {
+  // 收集表单
+  const name = document.getElementById('sf_name').value.trim() || '我的小店';
+  const title = document.getElementById('sf_title').value.trim() || '限时特惠';
+  const discount = document.getElementById('sf_discount').value.trim() || '';
+  const bonus = document.getElementById('sf_bonus').value.trim() || '';
+  const date = document.getElementById('sf_date').value.trim() || '';
+  const address = document.getElementById('sf_address').value.trim() || '';
+  const phone = document.getElementById('sf_phone').value.trim() || '';
+  const industry = document.getElementById('sf_industry').value;
+  const color = SMART_COLORS.find(c => c.id === smartColorId) || SMART_COLORS[0];
+
+  // 绘制专业海报
+  const c = document.getElementById('smartCanvas');
+  const ctx = c.getContext('2d');
+  const W=600, H=900;
+  c.width=W; c.height=H;
+
+  // 行业对应图标
+  const icons = { food:'🍜', clothing:'👗', fruit:'🍎', flower:'💐', beauty:'💇', market:'🏪', general:'⭐' };
+  const icon = icons[industry] || '⭐';
+
+  // ---- 背景 ----
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0, color.bg1); bg.addColorStop(0.5, color.bg2); bg.addColorStop(1, color.bg1);
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // ---- 装饰底纹 ----
+  ctx.save(); ctx.globalAlpha = 0.06;
+  for (let i=0; i<8; i++) {
+    const x = 50 + i*70, y = 100 + i*80;
+    ctx.fillStyle = '#fff'; ctx.font = '60px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('✦', x, y);
+  }
+  ctx.restore();
+
+  // ---- 顶部装饰条 ----
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, W, 6);
+  ctx.fillRect(0, H-6, W, 6);
+  ctx.restore();
+
+  // ---- 左上角装饰 ----
+  ctx.save(); ctx.globalAlpha = 0.12;
+  ctx.fillStyle = '#fff';
+  [-40, 50, 140].forEach(x => {
+    ctx.beginPath(); ctx.arc(x, -30, 80, 0, Math.PI*2); ctx.fill();
+  });
+  [W-100, W-200].forEach(x => {
+    ctx.beginPath(); ctx.arc(x, H+30, 80, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+
+  // ---- 店名 ----
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 4;
+  // 店名背景徽章
+  const nameW = Math.min(name.length*28 + 40, 400);
+  const nameX = (W-nameW)/2;
+  roundRect(ctx, nameX, 60, nameW, 48, 24);
+  ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5;
+  roundRect(ctx, nameX, 60, nameW, 48, 24); ctx.stroke();
+  // 店名文字
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = `bold ${name.length>4?22:26}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  ctx.fillText(name, W/2, 84);
+  ctx.restore();
+
+  // ---- 主标题（大号醒目） ----
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const titleSize = title.length > 6 ? 40 : title.length > 4 ? 48 : 56;
+  ctx.font = `900 ${titleSize}px "PingFang SC","Microsoft YaHei",sans-serif`;
+  // 描边增加厚重感
+  ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
+  ctx.strokeText(title, W/2, 240);
+  ctx.fillText(title, W/2, 240);
+  ctx.restore();
+
+  // ---- 副标题装饰线 ----
+  ctx.save(); ctx.globalAlpha = 0.3;
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(W*0.2, 280); ctx.lineTo(W*0.35, 280); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*0.65, 280); ctx.lineTo(W*0.8, 280); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '18px sans-serif'; ctx.textAlign = 'center';
+  ctx.globalAlpha = 0.5;
+  ctx.fillText('◆', W/2, 280);
+  ctx.restore();
+
+  // ---- 折扣/优惠（超大醒目的价格标签） ----
+  if (discount) {
+    ctx.save();
+    // 标签背景 - 椭圆形状
+    const dw = Math.min(discount.length * 30 + 60, 360);
+    const dh = 70;
+    ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    roundRect(ctx, (W-dw)/2, 310, dw, dh, dh/2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 2;
+    roundRect(ctx, (W-dw)/2, 310, dw, dh, dh/2); ctx.stroke();
+    // 折扣文字
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = `bold ${discount.length>6?28:34}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
+    ctx.fillText(discount, W/2, 345);
+    ctx.restore();
+  }
+
+  // ---- 附加信息 ----
+  if (bonus) {
+    ctx.save();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.globalAlpha = 0.9;
+    ctx.font = `bold ${bonus.length>10?18:22}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.fillText('🎁 ' + bonus, W/2, 410);
+    ctx.restore();
+  }
+
+  // ---- 中间装饰分隔 ----
+  ctx.save(); ctx.globalAlpha = 0.2;
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath(); ctx.moveTo(80, 460); ctx.lineTo(520, 460); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // ---- 行业图标 ----
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.font = '40px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(icon, W/2, 510);
+  ctx.restore();
+
+  // ---- 底部信息 ----
+  let infoY = 560;
+  const infoItems = [];
+  if (date) infoItems.push('⏰ ' + date);
+  if (address) infoItems.push('📍 ' + address);
+  if (phone) infoItems.push('📞 ' + phone);
+
+  ctx.save();
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+  infoItems.forEach((item, i) => {
+    const y = infoY + i * 38;
+    ctx.font = `${item.length>14?16:18}px "PingFang SC","Microsoft YaHei",sans-serif`;
+    ctx.globalAlpha = 0.85;
+    ctx.fillText(item, W/2, y);
+  });
+  ctx.restore();
+
+  // ---- 底部小字 ----
+  ctx.save(); ctx.globalAlpha = 0.2;
+  ctx.fillStyle = '#fff'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('小智店主工具箱 · 智能生成', W/2, H-20);
+  ctx.restore();
+
+  // 保存结果
+  smartResultData = c.toDataURL('image/png');
+
+  // 显示预览，隐藏表单
+  document.getElementById('smartForm').classList.remove('show');
+  document.getElementById('smartPreview').classList.add('show');
+  showToast('✅ 海报已智能生成！');
+}
+
+function smartExport() {
+  if (!smartResultData) { showToast('请先生成海报'); return; }
+  const link = document.createElement('a');
+  link.download = '智能海报.png';
+  link.href = smartResultData;
+  link.click(); showToast('📥 海报已导出！');
+}
+
+function smartEdit() {
+  // 把智能生成的内容填入海报编辑器
+  const name = document.getElementById('sf_name').value.trim() || '我的小店';
+  const title = document.getElementById('sf_title').value.trim() || '限时特惠';
+  const discount = document.getElementById('sf_discount').value.trim() || '';
+  const bonus = document.getElementById('sf_bonus').value.trim() || '';
+  const date = document.getElementById('sf_date').value.trim() || '';
+  const address = document.getElementById('sf_address').value.trim() || '';
+  const phone = document.getElementById('sf_phone').value.trim() || '';
+
+  // 选通用模板
+  selectPosterTemplate('promo');
+  setTimeout(() => {
+    if (posterState.texts && posterState.texts.length >= 4) {
+      posterState.texts[0].content = title.substring(0, 15);
+      posterState.texts[1].content = discount ? discount.substring(0, 18) : '欢迎光临';
+      posterState.texts[2].content = [date, bonus].filter(Boolean).join(' · ').substring(0, 25);
+      posterState.texts[3].content = [address, phone].filter(Boolean).join(' · ').substring(0, 25);
+      renderTextList(); updateCanvas();
+      showToast('✏️ 已进入编辑模式，可继续修改');
+    }
+  }, 400);
+}
+
+function smartRegenerate() {
+  document.getElementById('smartPreview').classList.remove('show');
+  document.getElementById('smartForm').classList.add('show');
+}
+// ============================================================
+//  产品知识库（从 products.json 加载，按需读取）
+// ============================================================
+let PRODUCT_KNOWLEDGE = {};
+
+// 加载产品知识库
+function loadProductKnowledge() {
+  return fetch('products.json')
+    .then(r => r.json())
+    .then(data => {
+      // 展平为 name → info 格式方便查找
+      const flat = {};
+      ['flowers','food','fruit'].forEach(cat => {
+        if (data[cat]) {
+          Object.entries(data[cat]).forEach(([name, info]) => {
+            flat[name] = info;
+          });
+        }
+      });
+      PRODUCT_KNOWLEDGE = flat;
+      console.log('✅ 产品知识库已加载，共', Object.keys(flat).length, '条');
+    })
+    .catch(() => {
+      console.log('⚠️ 产品知识库加载失败，使用内置基础数据');
+    });
+}
+
+// ---- 快速生成文案 ----
+function quickCopyGenerate() {
+  const name = document.getElementById('qc_name').value.trim() || '我的小店';
+  const product = document.getElementById('qc_product').value.trim() || '产品';
+  const industry = document.getElementById('qc_industry').value;
+
+  // 查找产品知识
+  const knowledge = PRODUCT_KNOWLEDGE[product];
+  const price = knowledge ? knowledge.price : '28';
+  const desc = knowledge ? knowledge.desc : '';
+  const lang = knowledge ? knowledge.lang : '';
+  const isFlower = industry === 'flower';
+
+  // 构建文案结果
+  const results = [];
+  const occasions = COPY_OCCASIONS.map(o => o.id);
+
+  occasions.forEach(occId => {
+    const tpls = COPY_TEMPLATES[industry] && COPY_TEMPLATES[industry][occId];
+    if (!tpls) return;
+    tpls.forEach(t => {
+      let text = t.template;
+      // 智能填充
+      text = text.replace(/\{店名\}/g, name);
+      text = text.replace(/\{新品名\}/g, product);
+      text = text.replace(/\{招牌菜\}/g, product);
+      text = text.replace(/\{价格\}/g, price);
+      text = text.replace(/\{套餐价\}/g, String(parseInt(price) * 2 || 88));
+      text = text.replace(/\{花名\}/g, product);
+      text = text.replace(/\{花语\}/g, lang || '美好祝福');
+      text = text.replace(/\{水果1\}/g, product);
+      text = text.replace(/\{水果2\}/g, '时令鲜果');
+      text = text.replace(/\{价格1\}/g, price);
+      text = text.replace(/\{价格2\}/g, String(parseInt(price)*0.7 || 20));
+      text = text.replace(/\{折扣\}/g, '8');
+      text = text.replace(/\{金額\}/g, '100');
+      text = text.replace(/\{减額\}/g, '20');
+      text = text.replace(/\{赠品\}/g, desc || '精美小礼品');
+      text = text.replace(/\{时间\}/g, '即日起至月底');
+      text = text.replace(/\{地址\}/g, 'XX路XX号');
+      text = text.replace(/\{电话\}/g, '138xxxxxxx');
+      text = text.replace(/\{季节\}/g, '当季');
+      text = text.replace(/\{节日名\}/g, '本季');
+      text = text.replace(/\{营业时间\}/g, '9:00-21:00');
+      text = text.replace(/\{套餐名\}/g, product + '套餐');
+      text = text.replace(/\{会员日\}/g, '15');
+      text = text.replace(/\{起送价\}/g, '30');
+      text = text.replace(/\{配送范围\}/g, '周边3公里');
+      text = text.replace(/\{品牌\}/g, name);
+      text = text.replace(/\{名称\}/g, product);
+
+      // 自动根据产品名补充
+      if (isFlower && lang && text.includes('花语')) {
+        // 花语已填充
+      }
+
+      results.push({ name: t.name, text, occId });
+    });
+  });
+
+  // 显示结果
+  const container = document.getElementById('qcResults');
+  if (results.length === 0) {
+    container.innerHTML = '<div class="smart-form-card"><p style="text-align:center;color:#999;">暂未收录该行业的文案模板 🙏</p></div>';
+    document.getElementById('qcEmpty').style.display = 'none';
+    showToast('暂无可用的文案模板');
+    return;
+  }
+
+  // 去重（最多显示8条）
+  const unique = [];
+  const seen = new Set();
+  results.forEach(r => {
+    const key = r.text.substring(0, 20);
+    if (!seen.has(key) && unique.length < 8) { seen.add(key); unique.push(r); }
+  });
+
+  container.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:#888;">共生成 ${unique.length} 条文案</div>`
+    + unique.map((r, idx) =>
+    `<div class="smart-form-card" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <span style="font-size:16px;">📝</span>
+        <span style="font-weight:600;font-size:14px;">${r.name}</span>
+        <span style="font-size:11px;color:#999;">${COPY_OCCASIONS.find(o=>o.id===r.occId)?.name||''}</span>
+      </div>
+      <div style="background:#f8f9ff;border-radius:8px;padding:12px;font-size:13px;line-height:1.8;white-space:pre-wrap;margin-bottom:8px;">${r.text}</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm" onclick="copyText(\`${encodeURIComponent(r.text)}\`)">📋 复制</button>
+        <button class="btn btn-outline btn-sm" onclick="useOnPoster('${encodeURIComponent(r.text)}')">🎨 用到海报</button>
+      </div>
+    </div>`
+  ).join('');
+
+  document.getElementById('qcEmpty').style.display = 'none';
+  showToast(`✅ 已生成 ${unique.length} 条文案！`);
+}
+
+// ---- 复制与用到海报（供文案结果调用） ----
+function copyText(encoded) {
+  const text = decodeURIComponent(encoded);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(()=>showToast('📋 已复制！')).catch(()=>fallbackCopy(text)); }
+  else { fallbackCopy(text); }
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea'); ta.value=text;
+  ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); showToast('📋 已复制！'); } catch(e){ showToast('复制失败'); }
+  document.body.removeChild(ta);
+}
+function useOnPoster(encoded) {
+  const text = decodeURIComponent(encoded);
+  const lines = text.split('\n').filter(l=>l.trim());
+  if(lines.length>0){
+    switchTab('poster');
+    if(!posterState.template) selectPosterTemplate('promo');
+    setTimeout(()=>{
+      if(posterState.texts&&posterState.texts.length>=2){
+        posterState.texts[0].content = lines[0].substring(0,20);
+        posterState.texts[1].content = lines.length>1 ? lines.slice(1,3).join(' · ').substring(0,30) : '欢迎光临';
+        renderTextList(); updateCanvas(); showToast('🎨 文案已用到海报！');
+      }
+    },300);
+  }
+}
+
+// ============================================================
+//  营销灵感
+// ============================================================
+function renderTips() {
+  const grid = document.getElementById('tipsGrid');
+  grid.innerHTML = MARKETING_TIPS.map(t =>
+    `<div class="tip-card" onclick="showTipDetail('${encodeURIComponent(t.icon)}','${encodeURIComponent(t.title)}','${encodeURIComponent(t.detail)}')">
+      <div class="tip-icon">${t.icon}</div><div class="tip-title">${t.title}</div>
+      <div class="tip-desc">${t.desc}</div>
+    </div>`
+  ).join('');
+}
+function showTipDetail(ie,te,de) {
+  document.getElementById('tdIcon').textContent = decodeURIComponent(ie);
+  document.getElementById('tdTitle').textContent = decodeURIComponent(te);
+  document.getElementById('tdContent').innerHTML = decodeURIComponent(de);
+  document.getElementById('tipDetailOverlay').classList.add('show');
+}
+function closeTipDetail() { document.getElementById('tipDetailOverlay').classList.remove('show'); }
+document.getElementById('tipDetailOverlay').addEventListener('click', function(e) { if(e.target===this) closeTipDetail(); });
+
+// ============================================================
+//  推广页
+// ============================================================
+const PROMO_THEMES = {
+  red:   { bg:'#e74c3c', bg2:'#c0392b', text:'#fff', accent:'#f1c40f', card:'rgba(255,255,255,0.1)', btn:'#f1c40f', btntext:'#c0392b' },
+  green: { bg:'#2ecc71', bg2:'#27ae60', text:'#fff', accent:'#fff', card:'rgba(255,255,255,0.15)', btn:'#fff', btntext:'#27ae60' },
+  blue:  { bg:'#3498db', bg2:'#2980b9', text:'#fff', accent:'#fff', card:'rgba(255,255,255,0.1)', btn:'#fff', btntext:'#2980b9' },
+  dark:  { bg:'#2d3436', bg2:'#636e72', text:'#fff', accent:'#fdcb6e', card:'rgba(255,255,255,0.08)', btn:'#fdcb6e', btntext:'#2d3436' },
+  gold:  { bg:'#f39c12', bg2:'#e67e22', text:'#fff', accent:'#fff', card:'rgba(255,255,255,0.15)', btn:'#fff', btntext:'#e67e22' },
+};
+
+function renderPromoPage() {
+  const name = document.getElementById('pf_name').value.trim() || '我的小店';
+  const slogan = document.getElementById('pf_slogan').value.trim() || '';
+  const promo = document.getElementById('pf_promo').value.trim() || '';
+  const products = document.getElementById('pf_products').value.trim() || '';
+  const address = document.getElementById('pf_address').value.trim() || '';
+  const phone = document.getElementById('pf_phone').value.trim() || '';
+  const hours = document.getElementById('pf_hours').value.trim() || '';
+  const themeId = document.getElementById('pf_theme').value;
+  const t = PROMO_THEMES[themeId] || PROMO_THEMES.red;
+
+  // 保存分享文本
+  window._promoText = `📢 ${name}\n${slogan ? '『' + slogan + '』\n' : ''}\n${promo ? '🔥 ' + promo + '\n' : ''}${products ? '📦 ' + products + '\n' : ''}${address ? '📍 ' + address + '\n' : ''}${phone ? '📞 ' + phone + '\n' : ''}${hours ? '⏰ ' + hours + '\n' : ''}\n—— 欢迎光临 ——`;
+
+  const frame = document.getElementById('promoPhoneFrame');
+  frame.innerHTML = `
+    <div style="background:linear-gradient(135deg,${t.bg},${t.bg2});min-height:600px;padding:0;">
+      <!-- 顶部 -->
+      <div style="background:rgba(0,0,0,0.15);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:${t.text};font-size:13px;font-weight:600;">📱 店铺推广</span>
+        <span style="color:${t.text};font-size:11px;opacity:0.7;">⏰ ${hours || '营业中'}</span>
+      </div>
+      <!-- 店名 -->
+      <div style="text-align:center;padding:30px 20px 10px;">
+        <div style="font-size:32px;font-weight:900;color:${t.text};margin-bottom:4px;">${name}</div>
+        ${slogan ? `<div style="font-size:15px;color:${t.text};opacity:0.85;">${slogan}</div>` : ''}
+      </div>
+      <!-- 优惠 -->
+      ${promo ? `
+      <div style="margin:16px 20px;background:${t.card};border-radius:16px;padding:16px;text-align:center;border:1px solid rgba(255,255,255,0.15);">
+        <div style="color:${t.accent};font-size:12px;margin-bottom:4px;">🔥 限时优惠</div>
+        <div style="color:${t.text};font-size:28px;font-weight:900;">${promo}</div>
+      </div>` : ''}
+      <!-- 产品 -->
+      ${products ? `
+      <div style="margin:12px 20px;background:${t.card};border-radius:16px;padding:16px;">
+        <div style="color:${t.text};font-size:13px;margin-bottom:6px;">📦 主营</div>
+        <div style="color:${t.text};font-size:16px;font-weight:600;">${products}</div>
+      </div>` : ''}
+      <!-- 信息 -->
+      <div style="margin:12px 20px;background:${t.card};border-radius:16px;padding:16px;">
+        ${address ? `<div style="color:${t.text};font-size:14px;margin-bottom:6px;">📍 ${address}</div>` : ''}
+        ${phone ? `<div style="color:${t.text};font-size:14px;margin-bottom:6px;">📞 ${phone}</div>` : ''}
+        ${hours ? `<div style="color:${t.text};font-size:14px;">⏰ ${hours}</div>` : ''}
+        ${address ? `<div style="margin-top:10px;"><a href="https://uri.amap.com/search?query=${encodeURIComponent(address)}" target="_blank" style="display:inline-block;background:${t.btn};color:${t.btntext};padding:8px 20px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;">🗺️ 查看地图</a></div>` : ''}
+      </div>
+      <!-- 按钮 -->
+      <div style="text-align:center;padding:16px 20px 30px;">
+        <a href="tel:${phone}" style="display:inline-block;background:${t.btn};color:${t.btntext};padding:12px 36px;border-radius:50px;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 4px 15px rgba(0,0,0,0.2);">📞 立即联系</a>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;">
+          <button onclick="shareThisPromo()" style="background:${t.card};color:${t.text};border:1px solid rgba(255,255,255,0.2);padding:8px 20px;border-radius:20px;font-size:13px;cursor:pointer;">📤 分享给朋友</button>
+        </div>
+        <div style="color:${t.text};font-size:11px;margin-top:10px;opacity:0.5;">${name} · 欢迎光临</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('promoPreview').style.display = 'block';
+  // 生成分享链接
+  const data = [name, slogan, promo, products, address, phone, hours, themeId].join('||');
+  const url = location.href.split('#')[0] + '#promo=' + encodeURIComponent(data);
+  // 二维码
+  document.getElementById('promoQR').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}" style="width:120px;height:120px;border-radius:6px;" alt="二维码">`;
+  window._promoUrl = url;
+}
+
+function copyPromoLink() {
+  if (!window._promoText) { showToast('请先生成推广页'); return; }
+  doCopy(window._promoText);
+  showShareGuide();
+}
+
+function sharePromoPage() {
+  copyPromoLink();
+}
+
+// 推广页内部的分享按钮
+function shareThisPromo() {
+  copyPromoLink();
+}
+
+function doCopy(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {}).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function showShareGuide() {
+  const overlay = document.createElement('div');
+  overlay.id = 'shareGuide';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:18px;padding:20px;max-width:360px;width:100%;text-align:center;animation:popIn 0.3s ease;">
+      <div style="font-size:40px;margin-bottom:6px;">📋</div>
+      <div style="font-size:17px;font-weight:700;color:#333;margin-bottom:2px;">已复制店铺信息！</div>
+      <div style="font-size:13px;color:#888;margin-bottom:12px;">去微信粘贴发送给朋友或群</div>
+      <div style="background:#f8f9ff;border-radius:10px;padding:10px;text-align:left;margin-bottom:12px;font-size:12px;color:#555;line-height:1.7;max-height:150px;overflow-y:auto;border:1px solid #eee;">
+        ${(window._promoText || '').replace(/\n/g, '<br>')}
+      </div>
+      <div style="background:#f0f2f5;border-radius:10px;padding:10px;text-align:left;margin-bottom:14px;">
+        <div style="font-size:12px;color:#555;line-height:1.8;">
+          📱 如何分享到微信：<br>
+          ① 打开微信<br>
+          ② 找到聊天或朋友圈<br>
+          ③ 输入框长按 → 粘贴 → 发送
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('shareGuide').remove()" style="flex:1;background:#f0f2f5;color:#666;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">关闭</button>
+        <button onclick="savePromoQR()" style="flex:1;background:#667eea;color:white;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📷 保存二维码</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function savePromoQR() {
+  const qrImg = document.querySelector('#promoQR img');
+  if (!qrImg) { showToast('没有二维码'); return; }
+  // 保存二维码图片
+  const a = document.createElement('a');
+  a.download = '店铺二维码.png';
+  a.href = qrImg.src;
+  a.click();
+  showToast('✅ 二维码已保存，可以发到微信群！');
+}
+
+// 检测 URL hash 自动渲染推广页
+function checkPromoHash() {
+  const hash = location.hash;
+  if (hash && hash.startsWith('#promo=')) {
+    const data = decodeURIComponent(hash.replace('#promo=', '')).split('||');
+    if (data.length >= 8) {
+      document.getElementById('pf_name').value = data[0];
+      document.getElementById('pf_slogan').value = data[1];
+      document.getElementById('pf_promo').value = data[2];
+      document.getElementById('pf_products').value = data[3];
+      document.getElementById('pf_address').value = data[4];
+      document.getElementById('pf_phone').value = data[5];
+      document.getElementById('pf_hours').value = data[6];
+      document.getElementById('pf_theme').value = data[7];
+      // 切换到推广页 tab
+      switchTab('promo');
+      setTimeout(renderPromoPage, 300);
+    }
+  }
+}
+
+// ============================================================
+//  Toast
+// ============================================================
+function showToast(msg) {
+  const el = document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._timer); el._timer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+// ============================================================
+//  启动
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  renderTemplates();
+  renderIndustries();
+  renderTips();
+  updateTrialBar();
+  initLogoGenerators();
+  initSmartColorGrid();
+  loadProductKnowledge();
+  checkPromoHash();
+  showToast('🎉 小智店主工具箱已上线！');
+});
+</script>
+</body>
+</html>
