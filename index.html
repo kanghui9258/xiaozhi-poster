@@ -2528,9 +2528,10 @@ function renderPromoPage() {
     </div>
   `;
   document.getElementById('promoPreview').style.display = 'block';
-  // 生成分享链接
+  // 生成分享链接（优先用线上地址）
+  const baseUrl = 'https://kanghui9258.github.io/xiaozhi-poster/';
   const data = [name, slogan, promo, products, address, phone, hours, themeId].join('||');
-  const url = location.href.split('#')[0] + '#promo=' + encodeURIComponent(data);
+  const url = baseUrl + '#promo=' + encodeURIComponent(data);
   // 二维码
   document.getElementById('promoQR').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}" style="width:120px;height:120px;border-radius:6px;" alt="二维码">`;
   window._promoUrl = url;
